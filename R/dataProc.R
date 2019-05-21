@@ -10,7 +10,7 @@
 #' @export
 testFun <- function(G, Ybin) {
   rankg <- rank(G)
-  testres <- (sum(rankg[y == 0]) / sum(y == 0)) - (sum(rankg[y == 1]) / sum(y == 1))
+  testres <- (sum(rankg[Ybin == 0]) / sum(Ybin == 0)) - (sum(rankg[Ybin == 1]) / sum(Ybin == 1))
   return(testres)
 }
 
