@@ -5,7 +5,7 @@
 \title{modelPerf
 Checking model performance.}
 \usage{
-modelPerf(bst, Xbin, Ybin)
+modelPerf(bst, Xbin, Ybin, title)
 }
 \arguments{
 \item{bst}{A trained xgboost}

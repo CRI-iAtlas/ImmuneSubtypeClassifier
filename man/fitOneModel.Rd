@@ -5,12 +5,15 @@
 \title{fitOneModel
 Train a single subtype model.}
 \usage{
-fitOneModel(Xbin, Ybin)
+fitOneModel(Xbin, Ybin, params = list(max_depth = 2, eta = 0.5, nrounds =
+  33, nthread = 5))
 }
 \arguments{
 \item{Xbin}{Gene expression matrix.}
 
 \item{Ybin}{Phenotype vector.}
+
+\item{params}{Params for xgboost.}
 }
 \value{
 A single xgboost classifier.
