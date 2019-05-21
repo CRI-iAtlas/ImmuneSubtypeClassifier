@@ -21,5 +21,4 @@ Get difference in mean rank sums for a single gene
 }
 \examples{
 res1 <- testFun(G, Ybin)
-
 }
