@@ -53,7 +53,7 @@ And to see model performance:
 res1 <- modelPerf(mod1, dat$Xbin, dat$Ybin)
 res1$modelError
 res1$plot
-```
+``` 
 
 To use cross validation to select the number of training rounds (trees):
 
