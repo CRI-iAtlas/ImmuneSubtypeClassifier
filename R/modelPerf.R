@@ -11,7 +11,7 @@
 #' @examples
 #' mod1 <- fitAllModels(ebppGeneExpr, phenotype)
 #'
-modelPerf <- function(bst, Xbin, Ybin) {
+modelPerf <- function(bst, Xbin, Ybin, cluster) {
   pred <- predict(bst, Xbin)
   err <- mean(as.numeric(pred > 0.5) != Ybin)
   print(table((pred > 0.5), Ybin))
