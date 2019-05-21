@@ -47,7 +47,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cluster='1', tail=0.05, brea
   # check that X is a matrix
   Ybin <- ifelse(Yvec == cluster, yes = 1, no=0)
   if (is.null(testRes)) {
-    testRes <- apply(Xmat, 1, FUN=function(a) testfun(a,Ybin))
+    testRes <- apply(Xmat, 1, FUN=function(a) testFun(a,Ybin))
   }
   Xsub <- featureSelection(Xmat, Ybin, testRes, 0.05)
   Xscl <- t(scale(Xsub)) # scale each sample
