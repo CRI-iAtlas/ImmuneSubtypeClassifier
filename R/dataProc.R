@@ -24,7 +24,8 @@ testFun <- function(G, Ybin) {
 #' Xsub <- featureSelection(Xmat, Ybin, 0.1)
 #'
 featureSelection <- function(Xmat, Ybin, testRes, tail=0.05) {
-  idx <- which( (testRes < quantile(testRes, tail)) | (testRes > quantile(testRes, 1.0-tail)) )
+  idx <- which( (testRes < quantile(testRes, tail, na.rm = T)) |
+                  (testRes > quantile(testRes, 1.0-tail, na.rm = T)) )
   Xsub <- Xmat[idx,]
   Xsub[is.na(Xsub)] <- 0
   return(Xsub)
@@ -39,7 +40,7 @@ featureSelection <- function(Xmat, Ybin, testRes, tail=0.05) {
 #' Xsub <- featureSelection(Xmat, Ybin, 0.1)
 #'
 breakBin <- function(x, breakVec){
-  brks <- quantile(as.numeric(x), probs=breakVec)
+  brks <- quantile(as.numeric(x), probs=breakVec, na.rm = T)
   xbin <- .bincode(x = x, breaks = brks)
   xbin <- as.numeric(xbin)
   xbin
