@@ -60,16 +60,16 @@ breakBin <- function(x, breakVec){
 #' @examples
 #' mod1 <- trainDataProc(Xmat, Yvec, tail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
 #'
-trainDataProc <- function(Xmat, Yvec, testRes=NULL, cluster='1', tail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 0.85, 1.0)) {
-  # check that X is a matrix
+trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', tail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
+  plan(multiprocess, workers = cores)
   Ybin <- ifelse(Yvec == cluster, yes = 1, no=0)
   if (is.null(testRes)) {
     testRes <- apply(Xmat, 1, FUN=function(a) testFun(a,Ybin))
   }
   Xscl <- scale(Xmat) # scale each sample, in columns
-  Xbinned <- apply(Xscl, 2, breakBin, breakVec)
-  # changed from:  feature select, then get bin breaks over all matrix, then bin.
-  Xbin <- featureSelection(Xbinned, Ybin, testRes, 0.05)
+  Xbinned <- future_apply(Xscl, 2, breakBin, breakVec)  # bin each column
+  Xbin <- featureSelection(Xbinned, Ybin, testRes, 0.05)  # subset genes
+  Xbin <- t(Xbin)
   return(list(dat=list(Xbin=Xbin,Ybin=Ybin), testRes=testRes))
 }
 
@@ -83,10 +83,10 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cluster='1', tail=0.05, brea
 #' @examples
 #' mod1 <- testDataProc(Xmat, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
 #'
-testDataProc <- function(Xmat, breakVec=c(0, 0.25, 0.5, 0.75, 0.85, 1.0)) {
-  # check that X is a matrix
+testDataProc <- function(Xmat, cores=2, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
+  plan(multiprocess, workers = cores)
   Xscl <- scale(Xmat) # scale each sample, in columns
-  Xbin <- apply(Xscl, 2, breakBin, breakVec)
+  Xbin <- future_apply(Xscl, 2, breakBin, breakVec)
   # changed from:  feature select, then get bin breaks over all matrix, then bin.
   #Xbin <- featureSelection(Xbinned, Ybin, testRes, 0.05)
   return(list(dat=list(Xbin=Xbin,Ybin=Ybin), testRes=testRes))

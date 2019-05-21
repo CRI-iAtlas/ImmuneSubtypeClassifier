@@ -14,5 +14,6 @@ LazyData: true
 Depends:
   xgboost,
   plotROC,
-  stringr
+  stringr,
+  future.apply
 RoxygenNote: 6.1.1
