@@ -65,7 +65,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cluster='1', tail=0.05, brea
   if (is.null(testRes)) {
     testRes <- apply(Xmat, 1, FUN=function(a) testFun(a,Ybin))
   }
-  Xscl <- scale(Xsub) # scale each sample, in columns
+  Xscl <- scale(Xmat) # scale each sample, in columns
   Xbinned <- apply(Xscl, 2, breakBin, breakVec)
   # changed from:  feature select, then get bin breaks over all matrix, then bin.
   Xbin <- featureSelection(Xbinned, Ybin, testRes, 0.05)
