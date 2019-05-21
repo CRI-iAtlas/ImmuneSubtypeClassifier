@@ -67,7 +67,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', tail=0
     testRes <- apply(Xmat, 1, FUN=function(a) testFun(a,Ybin))
   }
   Xscl <- scale(Xmat) # scale each sample, in columns
-  Xbinned <- future_apply(Xscl, 2, breakBin, breakVec)  # bin each column
+  Xbinned <- apply(Xscl, 2, breakBin, breakVec)  # bin each column
   Xbin <- featureSelection(Xbinned, Ybin, testRes, 0.05)  # subset genes
   Xbin <- t(Xbin)
   return(list(dat=list(Xbin=Xbin,Ybin=Ybin), testRes=testRes))
@@ -86,7 +86,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', tail=0
 testDataProc <- function(Xmat, cores=2, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
   plan(multiprocess, workers = cores)
   Xscl <- scale(Xmat) # scale each sample, in columns
-  Xbin <- future_apply(Xscl, 2, breakBin, breakVec)
+  Xbin <- apply(Xscl, 2, breakBin, breakVec)
   # changed from:  feature select, then get bin breaks over all matrix, then bin.
   #Xbin <- featureSelection(Xbinned, Ybin, testRes, 0.05)
   return(list(dat=list(Xbin=Xbin,Ybin=Ybin), testRes=testRes))
