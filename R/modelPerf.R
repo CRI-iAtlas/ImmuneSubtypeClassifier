@@ -3,7 +3,7 @@
 
 #' modelPerf
 #' Checking model performance.
-#'
+#' @export
 #' @param bst A trained xgboost
 #' @param Xbin Binned gene expression data
 #' @param Ybin Binary phenotype vector.

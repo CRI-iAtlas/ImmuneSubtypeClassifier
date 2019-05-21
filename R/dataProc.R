@@ -7,7 +7,7 @@
 #' @return test result, numeric value, the rank sum test.
 #' @examples
 #' res1 <- testFun(G, Ybin)
-#'
+#' @export
 testFun <- function(G, Ybin) {
   rankg <- rank(G)
   testres <- (sum(rankg[y == 0]) / sum(y == 0)) - (sum(rankg[y == 1]) / sum(y == 1))
@@ -16,7 +16,7 @@ testFun <- function(G, Ybin) {
 
 #' featureSelection
 #' Subset the genes, given a matrix
-#'
+#' @export
 #' @param Xmat Matrix of gene expression data.
 #' @param Ybin Binary phenotype vector.
 #' @return Xsub, subset of Xmat by genes
@@ -32,7 +32,7 @@ featureSelection <- function(Xmat, Ybin, testRes, tail=0.05) {
 
 #' dataProc
 #' Data preprocessing
-#'
+#' @export
 #' @param Xmat Matrix of gene expression, genes in columns, samples in rows
 #' @param Yvec Vector of phenotype, strings, 1, 2, etc
 #' @param testRes List of previously calculated test results, from testFun(.)

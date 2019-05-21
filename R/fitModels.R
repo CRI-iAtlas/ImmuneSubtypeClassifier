@@ -1,7 +1,7 @@
 
 #' fitAllModels
 #' Training all subtype models.
-#'
+#' @export
 #' @param x Gene expression matrix.
 #' @param y Phenotype vector.
 #' @return A list containing xgboost classifiers.
@@ -15,7 +15,7 @@ fitAllModels <- function(x,y){
 
 #' fitOneModel
 #' Train a single subtype model.
-#'
+#' @export
 #' @param Xbin Gene expression matrix.
 #' @param Ybin Phenotype vector.
 #' @return A single xgboost classifier.

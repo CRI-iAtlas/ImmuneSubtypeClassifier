@@ -13,9 +13,10 @@ devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier")
 First we read in the PanCancer expression matrix.
 
 ```{r}
-load('ebpp.rda')
+pathToEbpp <- 'ebpp.rda'
+load(pathToEbpp)
 ```
-
+  
 Then we get the reported TCGA immune subtypes.
 
 ```{r}
