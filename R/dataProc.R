@@ -54,7 +54,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cluster='1', tail=0.05, brea
   brks <- quantile(as.numeric(Xscl), probs=breakVec)
   Xbin <- apply(Xscl, 2, function(x) .bincode(x = x, breaks = brks))
   Xbin <- apply(Xbin, 2, as.numeric)
-  return(list(dat=list(Xbin,Ybin), testRes=testRes))
+  return(list(dat=list(Xbin=Xbin,Ybin=Ybin), testRes=testRes))
 }
 
 
