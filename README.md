@@ -43,14 +43,23 @@ testRes <- res0$testRes
 To fit one model:
 
 ```{r}
-mod1 <- fitOneModel(dat$Xbin, dat$Ybin)
+params <- list(max_depth = 2, eta = 0.5, nrounds = 33, nthread = 5)
+mod1 <- fitOneModel(dat$Xbin, dat$Ybin, params)
 ```
 
 And to see model performance:
 
 ```{r}
 res1 <- modelPerf(mod1, dat$Xbin, dat$Ybin)
+res1$modelError
 res1$plot
+```
+
+To use cross validation to select the number of training rounds (trees):
+
+```{r}
+params <- list(max_depth = 3, eta = 0.3, nrounds = 150, nthread = 5, nfold=5)
+mod1 <- cvFitOneModel(dat$Xbin, dat$Ybin, params)
 ```
 
 
