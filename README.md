@@ -49,7 +49,8 @@ mod1 <- fitOneModel(dat$Xbin, dat$Ybin)
 And to see model performance:
 
 ```{r}
-modelError <- modelPerf(bst, Xbin, Ybin) 
+res1 <- modelPerf(mod1, dat$Xbin, dat$Ybin)
+res1$plot
 ```
 
 
