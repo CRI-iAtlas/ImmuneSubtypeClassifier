@@ -35,7 +35,8 @@ fitOneModel <- function(Xbin, Ybin, params=list(max_depth = 2, eta = 0.5, nround
 #' modC1 <- fitOneModel(dat$Xbin, dat$Ybin)
 #'
 cvFitOneModel <- function(Xbin, Ybin,
-                          params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5)){
+                          params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
+                          breakVec){
   dtrain <- xgb.DMatrix(Xbin, label = Ybin)
   cvRes <-xgb.cv(data = dtrain,
                  nrounds=params$nrounds,
