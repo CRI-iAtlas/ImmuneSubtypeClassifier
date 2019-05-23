@@ -107,8 +107,6 @@ dataProc <- function(X, mods) {
 
   Xscl <- scale(Xmat) # scale each sample, in columns
   Xbin <- apply(Xscl, 2, breakBin, breakVec)
-  genes <- extractGenes(mods)
-  Xbin  <- Xbin[genes,]
 
   return(Xbin)
 }

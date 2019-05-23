@@ -36,7 +36,7 @@ fitOneModel <- function(Xbin, Ybin, params=list(max_depth = 2, eta = 0.5, nround
 #'
 cvFitOneModel <- function(Xbin, Ybin,
                           params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
-                          breakVec){
+                          breakVec=c(0, 0.25, 0.5, 0.75, 1.0)){
   dtrain <- xgb.DMatrix(Xbin, label = Ybin)
   cvRes <-xgb.cv(data = dtrain,
                  nrounds=params$nrounds,
@@ -70,18 +70,21 @@ cvFitOneModel <- function(Xbin, Ybin,
 #' @examples
 #' mods <- fitSubtypeModel(Xs, Ys, params)
 #'
-fitSubtypeModel <- function(Xs, Ys, breakVec=breakVec,
-  params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5)) {
+fitSubtypeModel <- function(Xs, Ys, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
+  params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
+  tail=0.05) {
 
   modelList <- list()
   allLabels <- unique(Ys)
 
   for (yi in allLabels) {
-    res0 <- trainDataProc(Xs, Ys, cluster=yi)
+    print(paste0('Subtype: ',yi, '  processing data...'))
+    res0 <- trainDataProc(Xs, Ys, cluster=yi, tail=0.01)
     dat  <- res0$dat
     csfr <- cvFitOneModel(dat$Xbin, dat$Ybin, params, breakVec)
     modelList[[yi]] <- csfr
   }
+  names(modelList) <- allLabels
   return(modelList)
 }
 
