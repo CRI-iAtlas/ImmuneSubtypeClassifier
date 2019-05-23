@@ -1,3 +1,10 @@
+---
+title: "ImmuneSubtypeClassifier"
+output:
+  html_document: default
+  'html_document:': default
+---
+
 # ImmuneSubtypeClassifier #
 An R package for classification of immune subtypes, in cancer, using gene expression data.
 
@@ -82,4 +89,5 @@ Xbin  <- dataProc(X, mods)
 calls <- callSubtypes(mods, dat)
 ```
 
-
+Each subtype (C1-C6) gives a probability of belonging to that class.
+A sample, then, can take the subtype with the highest probability.
