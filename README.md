@@ -38,6 +38,7 @@ Y <- reportedScores[,"ClusterModel1"]
 Then to preprocess and filter the data:
 
 ```{r}
+library(ImmuneSubtypeClassifier)
 res0     <- trainDataProc(Xmat, Y, cluster='1')
 testRes  <- res0$testRes   # scores used in filtering
 breakVec <- res0$breakVec  # break points used in binning

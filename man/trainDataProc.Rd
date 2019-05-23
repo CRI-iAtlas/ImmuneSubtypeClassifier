@@ -2,14 +2,14 @@
 % Please edit documentation in R/dataProc.R
 \name{trainDataProc}
 \alias{trainDataProc}
-\title{dataProc
+\title{trainDataProc
 Data preprocessing}
 \usage{
-trainDataProc(Xmat, Yvec, testRes = NULL, cluster = "1", tail = 0.05,
-  breakVec = c(0, 0.25, 0.5, 0.75, 0.85, 1))
+trainDataProc(Xmat, Yvec, testRes = NULL, cores = 2, cluster = "1",
+  tail = 0.05, breakVec = c(0, 0.25, 0.5, 0.75, 1))
 }
 \arguments{
-\item{Xmat}{Matrix of gene expression, genes in columns, samples in rows}
+\item{Xmat}{Matrix of gene expression, samples in columns, genes in rows}
 
 \item{Yvec}{Vector of phenotype, strings, 1, 2, etc}
 
@@ -25,7 +25,7 @@ trainDataProc(Xmat, Yvec, testRes = NULL, cluster = "1", tail = 0.05,
 List of Xbin and Ybin, the binned, subset, and binarized values.
 }
 \description{
-dataProc
+trainDataProc
 Data preprocessing
 }
 \examples{

@@ -9,9 +9,9 @@ cvFitOneModel(Xbin, Ybin, params = list(max_depth = 2, eta = 0.5, nrounds
   = 100, nthread = 5, nfold = 5))
 }
 \arguments{
-\item{Xbin}{Gene expression matrix.}
+\item{Xbin}{Binned and filtered gene expression matrix.}
 
-\item{Ybin}{Phenotype vector.}
+\item{Ybin}{Binned phenotype vector.}
 }
 \value{
 A single xgboost classifier.
@@ -21,6 +21,8 @@ cvfitOneModel
 Train a single subtype model using cross validation
 }
 \examples{
-modC1 <- fitOneModel(ebppGeneExpr, phenotype)
+res0 <- trainDataProc(Xmat, Y, cluster='1')
+dat  <- res0$dat
+modC1 <- fitOneModel(dat$Xbin, dat$Ybin)
 
 }

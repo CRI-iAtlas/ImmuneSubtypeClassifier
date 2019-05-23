@@ -59,7 +59,7 @@ cvFitOneModel <- function(Xbin, Ybin,
 }
 
 
-#' cvfitOneModel
+#' fitSubtypeModel
 #' Train a single subtype model using cross validation
 #' @export
 #' @param Xs Gene expression matrix.
