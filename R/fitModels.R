@@ -79,7 +79,7 @@ fitSubtypeModel <- function(Xs, Ys, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
 
   for (yi in allLabels) {
     print(paste0('Subtype: ',yi, '  processing data...'))
-    res0 <- trainDataProc(Xs, Ys, cluster=yi, tail=0.01)
+    res0 <- trainDataProc(Xs, Ys, cluster=yi, tail)
     dat  <- res0$dat
     csfr <- cvFitOneModel(dat$Xbin, dat$Ybin, params, breakVec)
     modelList[[yi]] <- csfr
