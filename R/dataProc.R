@@ -41,7 +41,8 @@ featureSelection <- function(Xmat, Ybin, testRes, tail=0.05) {
                   (testRes > quantile(testRes, 1.0-tail, na.rm = T)) )
   Xsub <- Xmat[idx,]
   Xsub[is.na(Xsub)] <- 0
-  return(Xsub)
+  Xgenes <- rownames(Xmat)[idx]
+  return(list(Xsub=Xsub, Genes=Xgenes))
 }
 
 #' featureSelection
@@ -54,7 +55,7 @@ featureSelection <- function(Xmat, Ybin, testRes, tail=0.05) {
 #'
 breakBin <- function(x, breakVec){
   brks <- quantile(as.numeric(x), probs=breakVec, na.rm = T)
-  xbin <- .bincode(x = x, breaks = brks)
+  xbin <- .bincode(x = x, breaks = brks, include.lowest = T)
   xbin <- as.numeric(xbin)
   xbin
 }
@@ -80,9 +81,10 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', tail=0
   }
   Xscl <- scale(Xmat) # scale each sample, in columns
   Xbinned <- apply(Xscl, 2, breakBin, breakVec)  # bin each column
-  Xbin <- featureSelection(Xbinned, Ybin, testRes, 0.05)  # subset genes
-  Xbin <- t(Xbin)
-  return(list(dat=list(Xbin=Xbin,Ybin=Ybin), testRes=testRes, breakVec=breakVec))
+  res0 <- featureSelection(Xbinned, Ybin, testRes, 0.05)  # subset genes
+  Xbin <- t(res0$Xbin)
+  genes <- res0$Genes
+  return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
 }
 
 
@@ -99,14 +101,17 @@ dataProc <- function(X, mods) {
 
   Xmat <- as.matrix(X)
 
-  if (class(mods) == 'list') {
+  if (length(mods) > 2) {
     breakVec <- mods[[1]]$breakVec
+    genes    <- mods[[1]]$genes
   } else {
     breakVec <- mods$breakVec
+    genes    <- mods$genes
   }
 
   Xscl <- scale(Xmat) # scale each sample, in columns
   Xbin <- apply(Xscl, 2, breakBin, breakVec)
+  Xbin <- t(Xbin[genes,])
 
   return(Xbin)
 }

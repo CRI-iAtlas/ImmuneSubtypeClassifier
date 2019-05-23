@@ -36,7 +36,8 @@ fitOneModel <- function(Xbin, Ybin, params=list(max_depth = 2, eta = 0.5, nround
 #'
 cvFitOneModel <- function(Xbin, Ybin,
                           params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
-                          breakVec=c(0, 0.25, 0.5, 0.75, 1.0)){
+                          breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
+                          genes){
   dtrain <- xgb.DMatrix(Xbin, label = Ybin)
   cvRes <-xgb.cv(data = dtrain,
                  nrounds=params$nrounds,
@@ -56,7 +57,7 @@ cvFitOneModel <- function(Xbin, Ybin,
                  nthread=params$nthread,
                  objective = "binary:logistic")
 
-  return(list(bst=bst, breakVec=breakVec))
+  return(list(bst=bst, breakVec=breakVec, genes))
 }
 
 
@@ -81,7 +82,7 @@ fitSubtypeModel <- function(Xs, Ys, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
     print(paste0('Subtype: ',yi, '  processing data...'))
     res0 <- trainDataProc(Xs, Ys, cluster=yi, tail)
     dat  <- res0$dat
-    csfr <- cvFitOneModel(dat$Xbin, dat$Ybin, params, breakVec)
+    csfr <- cvFitOneModel(dat$Xbin, dat$Ybin, params, breakVec, dat$genes)
     modelList[[yi]] <- csfr
   }
   names(modelList) <- allLabels
