@@ -77,8 +77,9 @@ fitSubtypeModel <- function(Xs, Ys, breakVec=breakVec,
   allLabels <- unique(Ys)
 
   for (yi in allLabels) {
-    res0 <- trainDataProc(Xmat, Y, cluster=yi)
-    csfr <- cvFitOneModel(Xbin, Ybin, params, breakVec)
+    res0 <- trainDataProc(Xs, Ys, cluster=yi)
+    dat  <- res0$dat
+    csfr <- cvFitOneModel(dat$Xbin, dat$Ybin, params, breakVec)
     modelList[[yi]] <- csfr
   }
   return(modelList)
