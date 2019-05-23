@@ -1,17 +1,4 @@
 
-#' fitAllModels
-#' Training all subtype models.
-#' @export
-#' @param x Gene expression matrix.
-#' @param y Phenotype vector.
-#' @return A list containing xgboost classifiers.
-#' @examples
-#' mod1 <- fitAllModels(ebppGeneExpr, phenotype)
-#'
-fitAllModels <- function(x,y){
-  return(TRUE)
-}
-
 
 #' fitOneModel
 #' Train a single subtype model.
@@ -24,6 +11,7 @@ fitAllModels <- function(x,y){
 #' modC1 <- fitOneModel(ebppGeneExpr, phenotype)
 #'
 fitOneModel <- function(Xbin, Ybin, params=list(max_depth = 2, eta = 0.5, nrounds = 33, nthread = 5)){
+
   bst <- xgboost(data = Xbin,
                  label = Ybin,
                  max_depth=params$max_depth,
@@ -31,18 +19,20 @@ fitOneModel <- function(Xbin, Ybin, params=list(max_depth = 2, eta = 0.5, nround
                  nrounds=params$nrounds,
                  nthread=params$nthread,
                  objective="binary:logistic")
-  return(bst)
+  return(list(bst=bst, breakVec=breakVec))
 }
 
 
 #' cvfitOneModel
 #' Train a single subtype model using cross validation
 #' @export
-#' @param Xbin Gene expression matrix.
-#' @param Ybin Phenotype vector.
+#' @param Xbin Binned and filtered gene expression matrix.
+#' @param Ybin Binned phenotype vector.
 #' @return A single xgboost classifier.
 #' @examples
-#' modC1 <- fitOneModel(ebppGeneExpr, phenotype)
+#' res0 <- trainDataProc(Xmat, Y, cluster='1')
+#' dat  <- res0$dat
+#' modC1 <- fitOneModel(dat$Xbin, dat$Ybin)
 #'
 cvFitOneModel <- function(Xbin, Ybin,
                           params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5)){
@@ -64,5 +54,33 @@ cvFitOneModel <- function(Xbin, Ybin,
                  nrounds = cvRes$best_iteration,
                  nthread=params$nthread,
                  objective = "binary:logistic")
-  return(bst)
+
+  return(list(bst=bst, breakVec=breakVec))
 }
+
+
+#' cvfitOneModel
+#' Train a single subtype model using cross validation
+#' @export
+#' @param Xs Gene expression matrix.
+#' @param Ys Phenotype vector, multiclass
+#' @param params Parameters for xgboost
+#' @return A list of xgboost classifiers, one for each subtype.
+#' @examples
+#' mods <- fitSubtypeModel(Xs, Ys, params)
+#'
+fitSubtypeModel <- function(Xs, Ys, breakVec=breakVec,
+  params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5)) {
+
+  modelList <- list()
+  allLabels <- unique(Ys)
+
+  for (yi in allLabels) {
+    res0 <- trainDataProc(Xmat, Y, cluster=yi)
+    csfr <- cvFitOneModel(Xbin, Ybin, params, breakVec)
+    modelList[[yi]] <- csfr
+  }
+  return(modelList)
+}
+
+

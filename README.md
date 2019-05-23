@@ -10,11 +10,14 @@ install.packages("devtools")
 devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier")
 ```
 
-First we read in the PanCancer expression matrix.
+First we read in the PanCancer expression matrix,
+'EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv'.
 
 ```{r}
-pathToEbpp <- 'ebpp.rda'
-load(pathToEbpp)
+library(utils)
+library(readr)
+download_file('http://api.gdc.cancer.gov/data/3586c0da-64d0-4b74-a449-5ff4d9136611')
+ebpp <- read_table('~/ebpp.tsv')
 ```
   
 Then we get the reported TCGA immune subtypes.
@@ -32,25 +35,26 @@ Xmat <- as.matrix(X)
 Y <- reportedScores[,"ClusterModel1"]
 ```
 
-Then to preprocess the data:
+Then to preprocess and filter the data:
 
 ```{r}
-res0 <- trainDataProc(Xmat, Y, cluster='1')
-dat <- res0$dat
-testRes <- res0$testRes
+res0     <- trainDataProc(Xmat, Y, cluster='1')
+testRes  <- res0$testRes   # scores used in filtering
+breakVec <- res0$breakVec  # break points used in binning
+dat      <- res0$dat
 ```
 
 To fit one model:
 
 ```{r}
 params <- list(max_depth = 2, eta = 0.5, nrounds = 33, nthread = 5)
-mod1 <- fitOneModel(dat$Xbin, dat$Ybin, params)
+mod1 <- fitOneModel(dat$Xbin, dat$Ybin, params, breakVec)
 ```
 
 And to see model performance:
 
 ```{r}
-res1 <- modelPerf(mod1, dat$Xbin, dat$Ybin)
+res1 <- modelPerf(mod1$bst, dat$Xbin, dat$Ybin)
 res1$modelError
 res1$plot
 ``` 
@@ -59,10 +63,22 @@ To use cross validation to select the number of training rounds (trees):
 
 ```{r}
 params <- list(max_depth = 3, eta = 0.3, nrounds = 150, nthread = 5, nfold=5)
-mod1 <- cvFitOneModel(dat$Xbin, dat$Ybin, params)
+mod1 <- cvFitOneModel(dat$Xbin, dat$Ybin, params, breakVec)
 ```
 
+To fit the list of subtype models (one for each subtype):
 
+```{r}
+params <- list(max_depth = 3, eta = 0.3, nrounds = 150, nthread = 5, nfold=5)
+mods <- fitSubtypeModel(Xmat, Y, params, breakVec)
+```
 
+Calling subtypes on new data (genes in rows, samples in columns):
+
+```{r}
+X <- read_table('path_to_my_data.tsv')
+Xbin  <- dataProc(X, mods)
+calls <- callSubtypes(mods, dat)
+```
 
 

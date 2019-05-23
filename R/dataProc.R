@@ -1,4 +1,17 @@
 
+#' extractGenes
+#' Extract the genes needed for the models.
+#' @param mods The trained xboost models, list or single.
+#' @return genes A vector of gene identifiers
+#' @examples
+#' genes <- extractGenes(mods)
+extractGenes <- function(mods){
+  genes <- c()
+
+  return(genes)
+}
+
+
 #' testFun
 #' Get difference in mean rank sums for a single gene
 #'
@@ -69,25 +82,35 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', tail=0
   Xbinned <- apply(Xscl, 2, breakBin, breakVec)  # bin each column
   Xbin <- featureSelection(Xbinned, Ybin, testRes, 0.05)  # subset genes
   Xbin <- t(Xbin)
-  return(list(dat=list(Xbin=Xbin,Ybin=Ybin), testRes=testRes))
+  return(list(dat=list(Xbin=Xbin,Ybin=Ybin), testRes=testRes, breakVec=breakVec))
 }
 
 
-#' testDataProc
+#' dataProc
 #' Data preprocessing
 #' @export
 #' @param Xmat Matrix of gene expression, genes in columns, samples in rows
-#' @param breakVec vector of break points, used to bin expression data
-#' @return List of Xbin and Ybin, the binned, subset, and binarized values.
+#' @param mods a model or list of models, containing breakpoints, used to bin expression data
+#' @return Xbin, the binned, subset, and binarized values.
 #' @examples
-#' mod1 <- testDataProc(Xmat, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
+#' mod1 <- dataProc(X, mods)
 #'
-testDataProc <- function(Xmat, cores=2, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
+dataProc <- function(X, mods) {
+
+  Xmat <- as.matrix(X)
+
+  if (class(mods) == 'list') {
+    breakVec <- mods[[1]]$breakVec
+  } else {
+    breakVec <- mods$breakVec
+  }
+
   Xscl <- scale(Xmat) # scale each sample, in columns
   Xbin <- apply(Xscl, 2, breakBin, breakVec)
-  # changed from:  feature select, then get bin breaks over all matrix, then bin.
-  #Xbin <- featureSelection(Xbinned, Ybin, testRes, 0.05)
-  return(list(dat=list(Xbin=Xbin,Ybin=Ybin), testRes=testRes))
+  genes <- extractGenes(mods)
+  Xbin  <- Xbin[genes,]
+
+  return(Xbin)
 }
 
 
