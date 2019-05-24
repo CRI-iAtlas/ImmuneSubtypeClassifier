@@ -57,7 +57,7 @@ cvFitOneModel <- function(Xbin, Ybin,
                  nthread=params$nthread,
                  objective = "binary:logistic")
 
-  return(list(bst=bst, breakVec=breakVec, genes))
+  return(list(bst=bst, breakVec=breakVec, genes=genes))
 }
 
 
