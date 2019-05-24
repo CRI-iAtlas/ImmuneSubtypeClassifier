@@ -90,7 +90,7 @@ dataProc <- function(X, mods) {
 
   Xmat <- as.matrix(X)
 
-  if (length(mods) > 2) {
+  if (length(mods) > 3) {
     breakVec <- mods[[1]]$breakVec
     genes    <- mods[[1]]$genes
   } else {
