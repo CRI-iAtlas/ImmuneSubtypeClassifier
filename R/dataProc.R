@@ -1,16 +1,4 @@
 
-#' extractGenes
-#' Extract the genes needed for the models.
-#' @param mods The trained xboost models, list or single.
-#' @return genes A vector of gene identifiers
-#' @examples
-#' genes <- extractGenes(mods)
-extractGenes <- function(mods){
-  genes <- c()
-
-  return(genes)
-}
-
 
 #' testFun
 #' Get difference in mean rank sums for a single gene
@@ -81,6 +69,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', tail=0
   }
   Xscl <- scale(Xmat) # scale each sample, in columns
   Xbinned <- apply(Xscl, 2, breakBin, breakVec)  # bin each column
+  rownames(Xbinned) <- rownames(Xmat)
   res0 <- featureSelection(Xbinned, Ybin, testRes, 0.05)  # subset genes
   Xbin <- t(res0$Xsub)
   genes <- res0$Genes
