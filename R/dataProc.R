@@ -82,7 +82,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', tail=0
   Xscl <- scale(Xmat) # scale each sample, in columns
   Xbinned <- apply(Xscl, 2, breakBin, breakVec)  # bin each column
   res0 <- featureSelection(Xbinned, Ybin, testRes, 0.05)  # subset genes
-  Xbin <- t(res0$Xbin)
+  Xbin <- t(res0$Xsub)
   genes <- res0$Genes
   return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
 }
