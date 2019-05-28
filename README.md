@@ -8,6 +8,10 @@ output:
 # ImmuneSubtypeClassifier #
 An R package for classification of immune subtypes, in cancer, using gene expression data.
 
+Currently, building the classifier... instuctions on using the classifier coming soon!
+
+
+
 ```{r}
 # Install devtools from CRAN
 install.packages("devtools")
@@ -15,29 +19,39 @@ install.packages("devtools")
 # Or the development version from GitHub:
 # install.packages("devtools")
 devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier")
+
+library(utils)
+library(readr)
+library(stringr)
 ```
 
 First we read in the PanCancer expression matrix,
 'EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv'.
 
 ```{r}
-library(utils)
-library(readr)
 download_file(src='http://api.gdc.cancer.gov/data/3586c0da-64d0-4b74-a449-5ff4d9136611', dest='~/ebpp.tsv')
-ebpp <- read_table('~/ebpp.tsv')
+ebpp <- read_tsv('~/ebpp.tsv')
 ```
   
 Then we get the reported TCGA immune subtypes.
 
 ```{r}
-reportedScores <- read_tsv('five_signature_mclust_ensemble_results.tsv.gz') # in the package data dir
+reportedScores <- read_tsv('data/five_signature_mclust_ensemble_results.tsv.gz') # in the package data dir
+reportedScores <- as.data.frame(reportedScores)
 rownames(reportedScores) <- str_replace_all(reportedScores$AliquotBarcode, pattern = '\\.', replacement = '-')
+```
+
+A little processing on the EB++ gene identifiers
+```{r}
+geneList <- str_split(ebpp$gene_id, pattern='\\|')
+geneSymbols <- unlist( lapply(geneList, function(a) a[2]) )
 ```
 
 To get the matrix and phenotypes in the same order:
 
 ```{r}
 X <- ebpp[, rownames(reportedScores)]
+rownames(X) <- geneSymbols
 Xmat <- as.matrix(X)
 Y <- reportedScores[,"ClusterModel1"]
 ```

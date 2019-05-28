@@ -24,9 +24,9 @@ testFun <- function(G, Ybin) {
 #' @examples
 #' Xsub <- featureSelection(Xmat, Ybin, 0.1)
 #'
-featureSelection <- function(Xmat, Ybin, testRes, tail=0.05) {
-  idx <- which( (testRes < quantile(testRes, tail, na.rm = T)) |
-                  (testRes > quantile(testRes, 1.0-tail, na.rm = T)) )
+featureSelection <- function(Xmat, Ybin, testRes, ptail=0.05) {
+  idx <- which( (testRes < quantile(testRes, ptail, na.rm = T)) |
+                  (testRes > quantile(testRes, 1.0-ptail, na.rm = T)) )
   Xsub <- Xmat[idx,]
   Xsub[is.na(Xsub)] <- 0
   Xgenes <- rownames(Xmat)[idx]
@@ -56,19 +56,19 @@ breakBin <- function(x, breakVec){
 #' @param Yvec Vector of phenotype, strings, 1, 2, etc
 #' @param testRes List of previously calculated test results, from testFun(.)
 #' @param cluster cluster name, string '1', as in Yvec
-#' @param tail Binary phenotype vector.
+#' @param ptail Binary phenotype vector.
 #' @param breakVec vector of break points, used to bin expression data
 #' @return List of Xbin and Ybin, the binned, subset, and binarized values.
 #' @examples
-#' mod1 <- trainDataProc(Xmat, Yvec, tail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
+#' mod1 <- trainDataProc(Xmat, Yvec, ptail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
 #'
-trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', tail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
+trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', ptail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
   Ybin <- ifelse(Yvec == cluster, yes = 1, no=0)
   if (is.null(testRes)) {
     testRes <- apply(Xmat, 1, FUN=function(a) testFun(a,Ybin))
   }
   Xscl <- scale(Xmat) # scale each sample, in columns
-  Xbinned <- apply(Xscl, 2, breakBin, breakVec)  # bin each column
+  Xbinned <- apply(Xscl, 2, breakBin, breakVec) # bin each column
   rownames(Xbinned) <- rownames(Xmat)
   res0 <- featureSelection(Xbinned, Ybin, testRes, 0.05)  # subset genes
   Xbin <- t(res0$Xsub)
