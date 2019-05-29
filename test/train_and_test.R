@@ -14,9 +14,11 @@ library(ImmuneSubtypeClassifier)
 # PanCancer batch corrected expression matrix
 ebpp <- read_tsv('EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv')
 
-ebpp <- as.data.frame(ebpp)
-rownames(ebpp) <- ebpp[,1]
-ebpp <- ebpp[,-1]
+geneList <- str_split(ebpp$gene_id, pattern='\\|')
+geneSymbols <- unlist( lapply(geneList, function(a) a[2]) )
+
+ebpp <- as.data.frame(ebpp[,-1])
+rownames(ebpp) <- geneSymbols
 
 # add to a data dir.
 reportedScores <- read.table('five_signature_mclust_ensemble_results.tsv.gz', sep='\t', header=T, stringsAsFactors = F)
