@@ -20,6 +20,6 @@ callSubtypes
 Make subtype calls for each sample
 }
 \examples{
-mods <- fitSubtypeModel(Xs, Ys, params)
+calls <- callSubtypes(mods, X)
 
 }

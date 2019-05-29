@@ -85,17 +85,18 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster=1, ptail=0.
 #' @export
 #' @param Xmat Matrix of gene expression, genes in columns, samples in rows
 #' @param mods a model or list of models, containing breakpoints, used to bin expression data
+#' @param ci the cluster label and index into list of models
 #' @return Xbin, the binned, subset, and binarized values.
 #' @examples
 #' mod1 <- dataProc(X, mods)
 #'
-dataProc <- function(X, mods) {
+dataProc <- function(X, mods=NULL, ci=1) {
 
   Xmat <- as.matrix(X)
 
   if (length(mods) > 3) {
-    breakVec <- mods[[1]]$breakVec
-    genes    <- mods[[1]]$genes
+    breakVec <- mods[[ci]]$breakVec
+    genes    <- mods[[ci]]$genes
   } else {
     breakVec <- mods$breakVec
     genes    <- mods$genes
