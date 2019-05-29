@@ -62,15 +62,18 @@ breakBin <- function(x, breakVec){
 #' @examples
 #' mod1 <- trainDataProc(Xmat, Yvec, ptail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
 #'
-trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster='1', ptail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
+trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster=1, ptail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
+
   Ybin <- ifelse(Yvec == cluster, yes = 1, no=0)
+
   if (is.null(testRes)) {
     testRes <- apply(Xmat, 1, FUN=function(a) testFun(a,Ybin))
   }
+
   Xscl <- scale(Xmat) # scale each sample, in columns
   Xbinned <- apply(Xscl, 2, breakBin, breakVec) # bin each column
   rownames(Xbinned) <- rownames(Xmat)
-  Xfeat <- featureSelection(Xbinned, Ybin, testRes, 0.05)  # subset genes
+  Xfeat <- featureSelection(Xbinned, Ybin, testRes, ptail)  # subset genes
   Xbin <- t(Xfeat$Xsub)
   genes <- Xfeat$Genes
   return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
