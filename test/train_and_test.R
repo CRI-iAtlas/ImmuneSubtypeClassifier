@@ -13,6 +13,7 @@ library(ImmuneSubtypeClassifier)
 
 # PanCancer batch corrected expression matrix
 ebpp <- read_tsv('EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv')
+
 ebpp <- as.data.frame(ebpp)
 rownames(ebpp) <- ebpp[,1]
 ebpp <- ebpp[,-1]
