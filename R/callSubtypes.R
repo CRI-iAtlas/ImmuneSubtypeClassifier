@@ -1,7 +1,5 @@
 
 
-
-
 #' callOneSubtype
 #' Make subtype calls for one sample
 #' @export
@@ -15,8 +13,9 @@
 callOneSubtype <- function(mods, X, ci) {
 
   # Xbin needs to have the same columns as the training matrix...	
+  print(paste0('calling subtype ', ci))
   mi <- mods[[ci]]
-  Xbin <- t(dataProc(X, mods, ci))
+  Xbin <- dataProc(X, mods, ci)
   pred <- predict(mi$bst, Xbin)
   return(pred)
 }
@@ -33,8 +32,9 @@ callOneSubtype <- function(mods, X, ci) {
 #'
 callSubtypes <- function(mods, X) {
 
-  pList <- lapply(names(mods), function(mi) callOneSubtype(mods, Xbin, mi))
+  pList <- lapply(names(mods), function(mi) callOneSubtype(mods, X, mi))
   pMat  <- do.call('cbind', pList)
   bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
   return(list(Calls=cbind(data.frame(BestCall=bestCall), pMat), Xbin=Xbin))
 }
+

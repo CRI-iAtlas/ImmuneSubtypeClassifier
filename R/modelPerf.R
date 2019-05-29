@@ -45,3 +45,22 @@ modelPerf2 <- function(calls, Ytest, subtype=1) {
   return(list(modelError=err, plot=rocplot, confusionMatrix=table((pred > 0.5), Ybin)))
 }
 
+
+#' Checking model performance.
+#' @export
+#' @param mods list of models fit to each subtype
+#' @param Ytest Multi-class phenotype vector.
+#' @return list of lists of err, the error in prediction, and a rocPlot
+#' @examples
+#' mod1 <- fitAllModels(ebppGeneExpr, phenotype)
+#'
+subtypePerf <- function(calls, Ytest) {
+
+  plotList <- lapply(unique(Ytest), function(mi) {
+    modelPerf2(calls, Ytest, mi)
+  })
+
+  return(plotList)
+}
+
+
