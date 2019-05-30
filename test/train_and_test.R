@@ -58,3 +58,5 @@ calls <- callSubtypes(mods, Xtest)
 # model performance plots
 perfs <- subtypePerf(calls, Ytest)
 
+library(gridExtra)
+grid.arrange(perfs[[1]]$plot,perfs[[2]]$plot,perfs[[3]]$plot,perfs[[4]]$plot,perfs[[5]]$plot,perfs[[6]]$plot, ncol=6, nrow=1 )

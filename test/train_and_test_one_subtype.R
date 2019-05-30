@@ -61,6 +61,8 @@ testYbin <- sapply(Ytest, function(yi) if (yi == cluster){1} else {0})
 
 # then model performance
 perf1 <- modelPerf(mod1$bst, testXbin, testYbin, cluster)
-perf1
+
+# ROC plot
+perf1$plot
 
 
