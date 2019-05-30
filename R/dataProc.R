@@ -90,7 +90,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster=1, ptail=0.
 #' @examples
 #' mod1 <- dataProc(X, mods)
 #'
-dataProc <- function(X, mods=NULL, ci=1) {
+dataProc <- function(X, mods=NULL, ci=NA) {
 
   Xmat <- as.matrix(X)
 

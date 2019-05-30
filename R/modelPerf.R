@@ -23,7 +23,7 @@ modelPerf <- function(bst, Xbin, Ybin, title='perf1') {
 }
 
 
-#' Checking model performance.
+#' Checking model performance when Y is multiple valued
 #' @export
 #' @param calls Calls from callSubtypes(.)
 #' @param Ytest Multi-class phenotype vector.
@@ -32,7 +32,7 @@ modelPerf <- function(bst, Xbin, Ybin, title='perf1') {
 #' @examples
 #' mod1 <- fitAllModels(ebppGeneExpr, phenotype)
 #'
-modelPerf2 <- function(calls, Ytest, subtype=1) {
+modelPerf2 <- function(calls, Ytest, subtype='1') {
 
   pred <- calls[, which(names(calls) == subtype)]
   Ybin <- sapply(Ytest, function(a) if (a == subtype){1} else {0})

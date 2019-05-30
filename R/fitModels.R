@@ -46,7 +46,7 @@ cvFitOneModel <- function(Xbin, Ybin,
                  max_depth=params$max_depth,
                  eta=params$eta,
                  early_stopping_rounds=2,
-                 metrics = list("error", "rmse","auc"),
+                 metrics = list("error", "auc"),
                  objective = "binary:logistic")
 
     bst <- xgboost(data = Xbin,
