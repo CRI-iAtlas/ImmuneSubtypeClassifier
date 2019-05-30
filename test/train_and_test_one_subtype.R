@@ -10,7 +10,7 @@ setwd('~/Code/iatlas/ImmuneSubtypeClassifier/')
 
 ebpp <- read_tsv('~/Work/PanCancer_Data/EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv')
 
-reportedScores <- read_tsv('data/five_signature_mclust_ensemble_results.tsv.gz') # in the package data dir
+reportedScores <- read_tsv('~/Work/PanCancer_Data/five_signature_mclust_ensemble_results.tsv.gz') # in the package data dir
 reportedScores <- as.data.frame(reportedScores)
 rownames(reportedScores) <- str_replace_all(reportedScores$AliquotBarcode, pattern = '\\.', replacement = '-')
 

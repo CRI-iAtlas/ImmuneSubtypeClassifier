@@ -41,3 +41,27 @@ callSubtypes <- function(mods, X, Y) {
 }
 
 
+#' callEnsemble
+#' Make subtype calls for each sample
+#' @export
+#' @param ens list, result of fitEnsembleModel
+#' @param X gene expression matrix, genes in rows, samples in columns
+#' @return table, column 1 is best call, remaining columns are subtype prediction scores.
+#' @examples
+#' calls <- callEnsemble(mods, X, Y)
+#'
+callEnsemble <- function(ens, X, Y) {
+
+  eList <- lapply(ens, function(ei) callSubtypes(ei, X, Y))
+  eRes <- Reduce('+', eList) / length(eList)
+  eRes <- eRes[,-c(1,2)] # remove subtypes Y and best calls
+  colnames(eRes) <- 1:6 # names(mods)
+  bestCall <- apply(eRes, 1, function(pi) colnames(eRes)[which(pi == max(pi)[1])])
+
+  return(cbind(data.frame(Y=Y, BestCall=bestCall), eRes))
+}
+
+
+
+
+

@@ -91,3 +91,31 @@ fitSubtypeModel <- function(Xs, Ys, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
 }
 
 
+#' fitEnsembleModel
+#' Train a single subtype model using cross validation
+#' @export
+#' @param Xs Gene expression matrix.
+#' @param Ys Phenotype vector, multiclass
+#' @param n Size of the ensember, where each member is a result from fitSubtypeModel
+#' @param sampSize proportion of samples to hold back
+#' @param params Parameters for xgboost
+#' @return A list of lists of xgboost classifiers
+#' @examples
+#' mods <- fitSubtypeModel(Xs, Ys, params)
+#'
+fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.6, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
+                            params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
+                            ptail=0.05) {
+
+  eList <- list()
+  for (i in 1:n) {
+
+    # sample our training and testing groups
+    idx <- sample(1:ncol(Xmat), size = sampSize * ncol(Xs), replace=F)
+    Xtrain <- Xs[,jdx]
+    Ytrain <- Y[jdx]
+    eList[[i]] <- fitSubtypeModel(Xtrain, Ytrain, breakVec, params, ptail)
+  }
+
+  return(eList)
+}

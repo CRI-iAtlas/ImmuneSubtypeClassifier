@@ -44,7 +44,7 @@ modelPerf2 <- function(calls, Ytest, subtype=NA) {
   baseplot <- ggplot(df, aes(m = predictions, d = labels))+ geom_roc(n.cuts=20,labels=FALSE)
   rocplot <- baseplot + annotate("text", x = .75, y = .25, label = paste("AUC =", round(calc_auc(baseplot)$AUC, 2)))
   rocplot <- rocplot + style_roc(theme = theme_grey) + geom_rocci(fill="pink") + ggtitle(paste0('Subtype: ', subtype))
-  return(list(modelError=err, plot=rocplot, confusionMatrix=table((pred > 0.5), Ybin)))
+  return(list(modelAUC=round(calc_auc(baseplot)$AUC, 2), modelError=err, plot=rocplot, confusionMatrix=table((pred > 0.5))))
 }
 
 
