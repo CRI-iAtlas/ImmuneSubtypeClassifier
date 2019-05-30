@@ -111,7 +111,7 @@ fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.6, breakVec=c(0, 0.25, 0.5,
   for (i in 1:n) {
 
     # sample our training and testing groups
-    jdx <- sample(1:ncol(Xmat), size = sampSize * ncol(Xs), replace=F)
+    jdx <- sample(1:ncol(Xs), size = sampSize * ncol(Xs), replace=F)
     Xtrain <- Xs[,jdx]
     Ytrain <- Y[jdx]
     eList[[i]] <- fitSubtypeModel(Xtrain, Ytrain, breakVec, params, ptail)
