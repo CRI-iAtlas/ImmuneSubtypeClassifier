@@ -7,7 +7,7 @@ library(readr)
 # using the package
 
 devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force = T)
-#reload(pkgload::inst('ImmuneSubtypeClassifier'))
+reload(pkgload::inst('ImmuneSubtypeClassifier'))
 library(ImmuneSubtypeClassifier)
 
 # PanCancer batch corrected expression matrix

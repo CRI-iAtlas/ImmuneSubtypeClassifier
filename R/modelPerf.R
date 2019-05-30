@@ -40,6 +40,7 @@ modelPerf2 <- function(calls, Ytest, subtype=NA) {
   err <- mean(as.numeric(pred > 0.5) != Ybin)
 
   df <- data.frame(predictions=pred, labels=Ybin, stringsAsFactors = F)
+
   rocplot <- ggplot(df, aes(m = predictions, d = labels))+ geom_roc(n.cuts=20,labels=FALSE) +
     annotate("text", x = .75, y = .25, label = paste("AUC =", round(calc_auc(basicplot)$AUC, 2))) +
   rocplot <- rocplot + style_roc(theme = theme_grey) + geom_rocci(fill="pink") + ggtitle(paste0('Subtype: ', subtype))
