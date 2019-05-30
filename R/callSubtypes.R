@@ -12,7 +12,7 @@
 #'
 callOneSubtype <- function(mods, X, ci) {
 
-  # Xbin needs to have the same columns as the training matrix...	
+  # Xbin needs to have the same columns as the training matrix...
   print(paste0('calling subtype ', ci))
   mi <- mods[[ci]]
   Xbin <- dataProc(X, mods, ci)
@@ -30,11 +30,14 @@ callOneSubtype <- function(mods, X, ci) {
 #' @examples
 #' calls <- callSubtypes(mods, X)
 #'
-callSubtypes <- function(mods, X) {
+callSubtypes <- function(mods, X, Y) {
 
   pList <- lapply(names(mods), function(mi) callOneSubtype(mods, X, mi))
   pMat  <- do.call('cbind', pList)
+  colnames(pMat) <- 1:6 # names(mods)
   bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
-  return(list(Calls=cbind(data.frame(BestCall=bestCall), pMat), Xbin=Xbin))
+
+  return(cbind(data.frame(Y=Y, BestCall=bestCall), pMat))
 }
+
 

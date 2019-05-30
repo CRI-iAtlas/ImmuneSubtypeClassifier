@@ -2,9 +2,9 @@
 % Please edit documentation in R/modelPerf.R
 \name{modelPerf2}
 \alias{modelPerf2}
-\title{Checking model performance.}
+\title{Checking model performance when Y is multiple valued}
 \usage{
-modelPerf2(calls, Ytest, subtype = 1)
+modelPerf2(calls, Ytest, subtype = NA)
 }
 \arguments{
 \item{calls}{Calls from callSubtypes(.)}
@@ -17,7 +17,7 @@ modelPerf2(calls, Ytest, subtype = 1)
 list of err, the error in prediction, and a rocPlot
 }
 \description{
-Checking model performance.
+Checking model performance when Y is multiple valued
 }
 \examples{
 mod1 <- fitAllModels(ebppGeneExpr, phenotype)

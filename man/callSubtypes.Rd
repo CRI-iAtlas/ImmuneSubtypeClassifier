@@ -5,7 +5,7 @@
 \title{callSubtypes
 Make subtype calls for each sample}
 \usage{
-callSubtypes(mods, X)
+callSubtypes(mods, X, Y)
 }
 \arguments{
 \item{mods}{xgboost model list}

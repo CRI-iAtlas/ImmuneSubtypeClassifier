@@ -6,7 +6,8 @@
 Train a single subtype model using cross validation}
 \usage{
 cvFitOneModel(Xbin, Ybin, params = list(max_depth = 2, eta = 0.5, nrounds
-  = 100, nthread = 5, nfold = 5), breakVec = c(0, 0.25, 0.5, 0.75, 1))
+  = 100, nthread = 5, nfold = 5), breakVec = c(0, 0.25, 0.5, 0.75, 1),
+  genes)
 }
 \arguments{
 \item{Xbin}{Binned and filtered gene expression matrix.}

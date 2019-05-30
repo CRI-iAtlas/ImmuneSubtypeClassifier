@@ -5,8 +5,8 @@
 \title{trainDataProc
 Data preprocessing}
 \usage{
-trainDataProc(Xmat, Yvec, testRes = NULL, cores = 2, cluster = "1",
-  tail = 0.05, breakVec = c(0, 0.25, 0.5, 0.75, 1))
+trainDataProc(Xmat, Yvec, testRes = NULL, cores = 2, cluster = 1,
+  ptail = 0.05, breakVec = c(0, 0.25, 0.5, 0.75, 1))
 }
 \arguments{
 \item{Xmat}{Matrix of gene expression, samples in columns, genes in rows}
@@ -17,7 +17,7 @@ trainDataProc(Xmat, Yvec, testRes = NULL, cores = 2, cluster = "1",
 
 \item{cluster}{cluster name, string '1', as in Yvec}
 
-\item{tail}{Binary phenotype vector.}
+\item{ptail}{Binary phenotype vector.}
 
 \item{breakVec}{vector of break points, used to bin expression data}
 }
@@ -29,6 +29,6 @@ trainDataProc
 Data preprocessing
 }
 \examples{
-mod1 <- trainDataProc(Xmat, Yvec, tail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
+mod1 <- trainDataProc(Xmat, Yvec, ptail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
 
 }

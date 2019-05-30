@@ -5,7 +5,7 @@
 \title{featureSelection
 Subset the genes, given a matrix}
 \usage{
-featureSelection(Xmat, Ybin, testRes, tail = 0.05)
+featureSelection(Xmat, Ybin, testRes, ptail = 0.05)
 }
 \arguments{
 \item{Xmat}{Matrix of gene expression data.}
