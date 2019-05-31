@@ -30,14 +30,14 @@ callOneSubtype <- function(mods, X, ci) {
 #' @examples
 #' calls <- callSubtypes(mods, X)
 #'
-callSubtypes <- function(mods, X, Y) {
+callSubtypes <- function(mods, X) {
 
   pList <- lapply(names(mods), function(mi) callOneSubtype(mods, X, mi))
   pMat  <- do.call('cbind', pList)
   colnames(pMat) <- 1:6 # names(mods)
   bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
 
-  return(cbind(data.frame(Y=Y, BestCall=bestCall), pMat))
+  return(cbind(data.frame(BestCall=bestCall), pMat))
 }
 
 

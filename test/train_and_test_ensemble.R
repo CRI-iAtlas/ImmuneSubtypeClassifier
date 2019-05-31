@@ -53,7 +53,7 @@ breakVec=c(0, 0.25, 0.5, 0.75, 1.0)
 params=list(max_depth = 5, eta = 0.5, nrounds = 100, nthread = 5, nfold=5)
 
 # list of models
-ens <- fitEnsembleModel(Xtrain, Ytrain, n=10, sampSize=0.6, ptail=0.02, params=params, breakVec=breakVec)
+ens <- fitEnsembleModel(Xtrain, Ytrain, n=10, sampSize=0.7, ptail=0.02, params=params, breakVec=breakVec)
 
 # calling subtypes on the test set
 calls <- callEnsemble(ens, Xtest, Ytest)
