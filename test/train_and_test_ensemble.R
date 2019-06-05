@@ -61,6 +61,6 @@ calls <- callEnsemble(ens, Xtest, Ytest)
 # model performance plots
 perfs <- subtypePerf(calls, Ytest)
 
-library(gridExtra)
-x <- grid.arrange(perfs[[1]]$plot,perfs[[2]]$plot,perfs[[3]]$plot,perfs[[4]]$plot,perfs[[5]]$plot,perfs[[6]]$plot, ncol=6, nrow=1 )
-ggsave(x, file='roc_plot.png')
+  library(gridExtra)
+  x <- grid.arrange(perfs[[1]]$plot,perfs[[2]]$plot,perfs[[3]]$plot,perfs[[4]]$plot,perfs[[5]]$plot,perfs[[6]]$plot, ncol=6, nrow=1 )
+  ggsave(x, file='roc_plot.png')

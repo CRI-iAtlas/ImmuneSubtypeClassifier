@@ -32,12 +32,12 @@ callOneSubtype <- function(mods, X, ci) {
 #'
 callSubtypes <- function(mods, X) {
 
-  pList <- lapply(names(mods), function(mi) callOneSubtype(mods, X, mi))
+  pList <- lapply(1:6, function(mi) callOneSubtype(mods, X, mi))  # was lapply(names(mods), ... )
   pMat  <- do.call('cbind', pList)
   colnames(pMat) <- 1:6 # names(mods)
   bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
 
-  return(cbind(data.frame(BestCall=bestCall), pMat))
+  return(cbind(data.frame(BestCall=bestCall), pMat, stringsAsFactors=F))
 }
 
 
@@ -53,15 +53,11 @@ callSubtypes <- function(mods, X) {
 callEnsemble <- function(ens, X, Y) {
 
   eList <- lapply(ens, function(ei) callSubtypes(ei, X))
+  eRes <- eRes[,-1] # remove best calls
   eRes <- Reduce('+', eList) / length(eList)
-  eRes <- eRes[,-1] # remove subtypes Y and best calls
   colnames(eRes) <- 1:6 # names(mods)
   bestCall <- apply(eRes, 1, function(pi) colnames(eRes)[which(pi == max(pi)[1])])
 
   return(cbind(data.frame(BestCall=bestCall), eRes))
 }
-
-
-
-
 

@@ -78,7 +78,7 @@ fitSubtypeModel <- function(Xs, Ys, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
   modelList <- list()
   allLabels <- unique(Ys)
 
-  for (yi in allLabels) {
+  for (yi in 1:6) {  # was yi in allLabels
     print(paste0('Subtype: ',yi, '  processing data...'))
     res0 <- trainDataProc(Xs, Ys, cluster=yi, ptail=ptail)
     dat  <- res0$dat
