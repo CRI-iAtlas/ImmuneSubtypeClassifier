@@ -50,7 +50,7 @@ callSubtypes <- function(mods, X) {
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(ens, X, Y) {
+callEnsemble <- function(ens, X) {
 
   eList <- lapply(ens, function(ei) callSubtypes(ei, X))
   eRes <- eRes[,-1] # remove best calls
@@ -60,4 +60,3 @@ callEnsemble <- function(ens, X, Y) {
 
   return(cbind(data.frame(BestCall=bestCall), eRes))
 }
-

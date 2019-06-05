@@ -1,0 +1,30 @@
+
+TODO
+----
+
+0. Parameters to optimize:
+   -- reducing number of needed genes to minimum
+   -- break points for binning genes
+   -- eta, max depth
+   -- ensemble size (want it not too big) for speed of calling
+   -- ptail -- the proportion of genes to select
+   -- allow overlapping genes across subtype models? or hard partitions?
+   -- included genes ... just use immune genes?
+
+1. Switch to turn off feature selection.
+
+2. Allow entrez IDs or gene symbols (two fit models?)
+
+3. Allow for missing genes.
+
+4. Drop genes that are not in any model.. smaller models
+     -- have to gather list of features across all models --
+     -- when new data comes in with missing genes
+        -- print warning
+        -- add them to the matrix as zeros.
+
+5. feature importance ...
+   -- given 800 genes in a model
+   -- only have Gain scores for ~200 and most of them are very very low.
+
+    fi <- xgboost::xgb.importance(model=ens[[1]][[1]]$bst)
