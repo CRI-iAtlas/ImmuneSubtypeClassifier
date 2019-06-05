@@ -50,18 +50,16 @@ callSubtypes <- function(mods, X) {
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(ens, X, Y) {
+callEnsemble <- function(ens, X) {
 
   eList <- lapply(ens, function(ei) callSubtypes(ei, X))
-  eRes <- Reduce('+', eList) / length(eList)
-  eRes <- eRes[,-1] # remove subtypes Y and best calls
+  eRes  <- Reduce('+', eList) / length(eList)
+  eRes  <- eRes[,-1] # remove subtypes Y and best calls
   colnames(eRes) <- 1:6 # names(mods)
   bestCall <- apply(eRes, 1, function(pi) colnames(eRes)[which(pi == max(pi)[1])])
 
   return(cbind(data.frame(BestCall=bestCall), eRes))
 }
-
-
 
 
 
