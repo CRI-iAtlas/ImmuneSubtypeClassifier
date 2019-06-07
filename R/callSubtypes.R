@@ -46,15 +46,22 @@ callSubtypes <- function(mods, X) {
 #' @export
 #' @param ens list, result of fitEnsembleModel
 #' @param X gene expression matrix, genes in rows, samples in columns
+#' @param path the path to the ensemble model, stored as RData, and named 'ens'
 #' @return table, column 1 is best call, remaining columns are subtype prediction scores.
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(ens, X) {
+callEnsemble <- function(ens, X, cores = 2, path='data') {
 
-  eList <- lapply(ens, function(ei) callSubtypes(ei, X))
-  eRes <- eRes[,-1] # remove best calls
+  if (path == 'data') {
+    data("ensemble_model")
+  } else {
+    load(path)
+  }
+
+  eList <- mclapply(ens, function(ei) callSubtypes(ei, X), mc.cores=cores)
   eRes <- Reduce('+', eList) / length(eList)
+  eRes <- eRes[,-1] # remove best calls
   colnames(eRes) <- 1:6 # names(mods)
   bestCall <- apply(eRes, 1, function(pi) colnames(eRes)[which(pi == max(pi)[1])])
 

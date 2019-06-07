@@ -11,14 +11,17 @@ TODO
    -- allow overlapping genes across subtype models? or hard partitions?
    -- included genes ... just use immune genes?
 
-1. Switch to turn off feature selection.
+1. Switch to turn off feature selection... maybe just make ptail=1?
+   -- and skip the rank sum test if ptail=1
 
 2. Allow entrez IDs or gene symbols (two fit models?)
 
 3. Allow for missing genes.
+   -- fill in matrix with empty values for missing genes.
+   -- think model expects a column named g_i
 
 4. Drop genes that are not in any model.. smaller models
-     -- have to gather list of features across all models --
+     X (R script in test dir) have to gather list of features across all models --
      -- when new data comes in with missing genes
         -- print warning
         -- add them to the matrix as zeros.
