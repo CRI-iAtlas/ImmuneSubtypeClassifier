@@ -16,3 +16,4 @@ library(ImmuneSubtypeClassifier)
 
 gdc <- read.table('~/Work/iAtlas/Subtypes/Subtype-Classifier/GDC_Test/gdc_kirc_dat.csv', header=T, stringsAsFactors = F, sep=',')
 
+calls <- callEnsemble()

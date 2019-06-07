@@ -73,7 +73,6 @@ callSubtypes <- function(mods, X, cores) {
 #' callEnsemble
 #' Make subtype calls for each sample
 #' @export
-#' @param ens list, result of fitEnsembleModel
 #' @param X gene expression matrix, genes in row.names, samples in column.names
 #' @param path the path to the ensemble model, stored as RData, and named 'ens'
 #' @param geneids either hgnc for gene symbols or entrez ids. will be matched to the EB++ matrix
@@ -81,7 +80,7 @@ callSubtypes <- function(mods, X, cores) {
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(ens, X, cores = 2, path='data', geneids='hgnc') {
+callEnsemble <- function(X, cores = 2, path='data', geneids='hgnc') {
 
   if (path == 'data') {
     data("ensemble_model")
