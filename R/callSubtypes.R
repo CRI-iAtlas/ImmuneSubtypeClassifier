@@ -80,7 +80,7 @@ callSubtypes <- function(mods, X, cores) {
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(X, cores = 2, path='data', geneids='hgnc') {
+callEnsemble <- function(X, cores = 2, path='data', geneids='symbol') {
 
   if (path == 'data') {
     data("ensemble_model")
