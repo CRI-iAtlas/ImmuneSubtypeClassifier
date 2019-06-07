@@ -2,6 +2,8 @@
 TODO
 ----
 
+-1.  What should be done with NAs in the incoming data? 0s?
+
 0. Parameters to optimize:
    -- reducing number of needed genes to minimum
    -- break points for binning genes

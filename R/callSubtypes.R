@@ -1,5 +1,34 @@
 
 
+#' geneMatch
+#' Match the incoming data to what was used in training
+#' @export
+#' @param X gene expression matrix, genes in rows, samples in columns
+#' @return X, but with genes matching the ebpp set, missing genes are NAs
+#' @examples
+#' Xprime <- geneMatch(X)
+#'
+geneMatch <- function(X, geneid='symbol') {
+
+  data('ebpp_gene')
+
+  if (geneid == 'symbol') {
+    idx <- match(table = rownames(X), x = ebpp_genes$Symbol)
+  } else if (geneid == 'entrez') {
+    idx <- match(table = rownames(X), x = ebpp_genes$Entrez)
+  } else {
+    print("Please use gene symbols or entrez")
+    return(NA)
+  }
+
+  X2 <- X[idx,]  ### Adds NA rows in missing genes
+  rownames(X2) <- ebpp_genes$Symbol
+  return(X2)
+}
+
+
+
+
 #' callOneSubtype
 #' Make subtype calls for one sample
 #' @export
@@ -30,7 +59,7 @@ callOneSubtype <- function(mods, X, ci) {
 #' @examples
 #' calls <- callSubtypes(mods, X)
 #'
-callSubtypes <- function(mods, X) {
+callSubtypes <- function(mods, X, cores) {
 
   pList <- lapply(1:6, function(mi) callOneSubtype(mods, X, mi))  # was lapply(names(mods), ... )
   pMat  <- do.call('cbind', pList)
@@ -45,13 +74,14 @@ callSubtypes <- function(mods, X) {
 #' Make subtype calls for each sample
 #' @export
 #' @param ens list, result of fitEnsembleModel
-#' @param X gene expression matrix, genes in rows, samples in columns
+#' @param X gene expression matrix, genes in row.names, samples in column.names
 #' @param path the path to the ensemble model, stored as RData, and named 'ens'
+#' @param geneids either hgnc for gene symbols or entrez ids. will be matched to the EB++ matrix
 #' @return table, column 1 is best call, remaining columns are subtype prediction scores.
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(ens, X, cores = 2, path='data') {
+callEnsemble <- function(ens, X, cores = 2, path='data', geneids='hgnc') {
 
   if (path == 'data') {
     data("ensemble_model")
@@ -59,7 +89,9 @@ callEnsemble <- function(ens, X, cores = 2, path='data') {
     load(path)
   }
 
-  eList <- mclapply(ens, function(ei) callSubtypes(ei, X), mc.cores=cores)
+  X <- geneMatch(X, geneids)
+
+  eList <- lapply(ens, function(ei) callSubtypes(ei, X))
   eRes <- Reduce('+', eList) / length(eList)
   eRes <- eRes[,-1] # remove best calls
   colnames(eRes) <- 1:6 # names(mods)
