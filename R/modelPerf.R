@@ -67,4 +67,59 @@ subtypePerf <- function(calls, Ytest) {
 
 
 
+#' Build the importance table.
+#' @export
+#' @param mods list of models fit to each subtype
+#' @param type the type of models, single, subtypes(list of 6), ensemble
+#' @return table of informative features
+#' @examples
+#' mod1 <- getImportance(mods, type='ensemble')
+#'
+subtypePerf <- function(mods, mtype='ensemble', ci=1) {
+
+  if (type == 'ensemble') {
+    el <- 1:length(mods) # size of ensemble
+    si <- 1:6           # for each subtype
+  } else if (type == 'subtypelist') {
+    el <- 1
+    si <- 1:6
+  } else if (type == 'single') {
+    el <- 1
+    si <- ci
+  } else {
+    print('Please use type: single, list, or ensemble')
+    return(NA)
+  }
+
+  res0 <- list()
+  for (j in si) {  #-- length of number of subtypes
+    res1 <- list()
+    for (i in el) {   #-- size of ensemble
+      print(paste0(j, '  ', i))
+      ei <- mods[[i]]  # get the ensemble member out, list of 6
+      m <- ei[[j]]$bst    # get the subtype classifier out
+      g <- xgboost::xgb.importance(model=m)
+      print(head(g$Feature))
+      res1[[i]]  <- g
+    }
+    res0[[j]] <- res1
+  }
+
+  allgenes <- data.frame()
+
+  for (j in si) {
+    for (i in el) {
+      x <- mods[[j]][[i]]
+      for (xi in 1:nrow(x)) {
+        allgenes <- rbind(allgenes, data.frame(Subtype1=si, EnsembleMember=i, GeneNum=xi, Gene=x$Feature[xi], Gain=x$Gain[xi]))
+      }
+    }
+  }
+
+  return(allgenes)
+}
+
+
+
+
 
