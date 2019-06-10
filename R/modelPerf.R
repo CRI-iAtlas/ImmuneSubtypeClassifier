@@ -108,10 +108,11 @@ subtypePerf <- function(mods, mtype='ensemble', ci=1) {
   allgenes <- data.frame()
 
   for (j in si) {
+    print(j)
     for (i in el) {
-      x <- mods[[j]][[i]]
+      x <- res0[[j]][[i]]
       for (xi in 1:nrow(x)) {
-        allgenes <- rbind(allgenes, data.frame(Subtype1=si, EnsembleMember=i, GeneNum=xi, Gene=x$Feature[xi], Gain=x$Gain[xi]))
+        allgenes <- rbind(allgenes, data.frame(Subtype1=j, EnsembleMember=i, GeneNum=xi, Gene=x$Feature[xi], Gain=x$Gain[xi]))
       }
     }
   }
