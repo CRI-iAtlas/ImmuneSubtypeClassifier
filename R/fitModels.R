@@ -112,11 +112,13 @@ fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.7, dtype='continuous', brea
   eList <- list()
   for (i in 1:n) {
 
-    # sample our training and testing groups
-    jdx <- sample(1:ncol(Xs), size = sampSize * ncol(Xs), replace=F)
-    Xs2 <- Xs[,jdx]
-    Ys2 <- Ys[jdx]
-    eList[[i]] <- fitSubtypeModel(Xs=Xs2, Ys=Ys2, breakVec=breakVec, params=params, dtype=dtype, ptail=ptail)
+    try(expr={
+      # sample our training and testing groups
+      jdx <- sample(1:ncol(Xs), size = sampSize * ncol(Xs), replace=F)
+      Xs2 <- Xs[,jdx]
+      Ys2 <- Ys[jdx]
+      eList[[i]] <- fitSubtypeModel(Xs=Xs2, Ys=Ys2, breakVec=breakVec, params=params, dtype=dtype, ptail=ptail)
+      })
   }
 
   return(eList)
