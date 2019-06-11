@@ -37,16 +37,17 @@ geneMatch <- function(X, geneid='pairs') {
 #' @param mods xgboost model list
 #' @param X gene expression matrix, genes in rows, samples in columns
 #' @param ci cluster label, and index into mods
+
 #' @return preds of one cluster model.
 #' @examples
 #' calli <- callOneSubtype(mods, X, 4)
 #'
-callOneSubtype <- function(mods, X, ci) {
+callOneSubtype <- function(mods, X, ci, dtype) {
 
   # Xbin needs to have the same columns as the training matrix...
   print(paste0('calling subtype ', ci))
   mi <- mods[[ci]]
-  Xbin <- dataProc(X, mods, ci)
+  Xbin <- dataProc(X, mods, ci, dtype)
   pred <- predict(mi$bst, Xbin)
   return(pred)
 }
@@ -57,13 +58,15 @@ callOneSubtype <- function(mods, X, ci) {
 #' @export
 #' @param mods xgboost model list
 #' @param X gene expression matrix, genes in rows, samples in columns
+#' @param cores num cores -- not used, but should be used.
+#' @param dtype data type
 #' @return table, column 1 is best call, remaining columns are subtype prediction scores.
 #' @examples
 #' calls <- callSubtypes(mods, X)
 #'
-callSubtypes <- function(mods, X, cores) {
+callSubtypes <- function(mods, X, cores, dtype) {
 
-  pList <- lapply(1:6, function(mi) callOneSubtype(mods, X, mi))  # was lapply(names(mods), ... )
+  pList <- lapply(1:6, function(mi) callOneSubtype(mods, X, mi, dtype))  # was lapply(names(mods), ... )
   pMat  <- do.call('cbind', pList)
   colnames(pMat) <- 1:6 # names(mods)
   bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
@@ -82,7 +85,7 @@ callSubtypes <- function(mods, X, cores) {
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(X, cores = 2, path='data', geneids='symbol') {
+callEnsemble <- function(X, cores = 2, path='data', geneids='symbol', dtype='continuous') {
 
   if (path == 'data') {
     data("ensemble_model")
@@ -92,7 +95,7 @@ callEnsemble <- function(X, cores = 2, path='data', geneids='symbol') {
 
   X <- geneMatch(X, geneids)
 
-  eList <- lapply(ens, function(ei) callSubtypes(ei, X))
+  eList <- lapply(ens, function(ei) callSubtypes(ei, X, dtype))
   eRes <- Reduce('+', eList) / length(eList)
   eRes <- eRes[,-1] # remove best calls
   colnames(eRes) <- 1:6 # names(mods)

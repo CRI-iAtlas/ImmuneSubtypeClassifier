@@ -110,11 +110,12 @@ trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.05,
 #' @param Xmat Matrix of gene expression, genes in columns, samples in rows
 #' @param mods a model or list of models, containing breakpoints, used to bin expression data
 #' @param ci the cluster label and index into list of models
+#' @param dtype data type, continuous or binary
 #' @return Xbin, the binned, subset, and binarized values.
 #' @examples
 #' mod1 <- dataProc(X, mods)
 #'
-dataProc <- function(X, mods=NULL, ci=NA) {
+dataProc <- function(X, mods=NULL, ci=NA, dtype = 'continous') {
 
   Xmat <- as.matrix(X)
 
@@ -126,14 +127,22 @@ dataProc <- function(X, mods=NULL, ci=NA) {
     genes    <- mods$genes
   }
 
-  Xscl <- scale(Xmat) # scale each sample, in columns
-  Xbin <- apply(Xscl, 2, breakBin, breakVec)
-  rownames(Xbin) <- rownames(X)
-  idx <-  match(table = rownames(X), x = genes)
-  Xbin <- t(Xbin[idx,])
-  colnames(Xbin) <- genes
+  if (dtype == 'continuous') {
+    Xscl <- scale(Xmat) # scale each sample, in columns
+    Xbin <- apply(Xscl, 2, breakBin, breakVec)
+    rownames(Xbin) <- rownames(X)
+    idx <-  match(table = rownames(X), x = genes)
+    Xbin <- t(Xbin[idx,])
+    colnames(Xbin) <- genes
+  } else if (dtype == 'binary') {
+    idx <-  match(table = rownames(X), x = genes)
+    Xbin <- t(X[idx,])
+    colnames(Xbin) <- genes
+  } else {
+    print('Error: dataProc()')
+    Xbin <- NA
+  }
+
   return(Xbin)
 }
-
-
 
