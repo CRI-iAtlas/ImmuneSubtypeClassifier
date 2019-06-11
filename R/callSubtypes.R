@@ -8,7 +8,7 @@
 #' @examples
 #' Xprime <- geneMatch(X)
 #'
-geneMatch <- function(X, geneid='pair') {
+geneMatch <- function(X, geneid='pairs') {
 
   data('ebpp_gene')
 
@@ -16,7 +16,7 @@ geneMatch <- function(X, geneid='pair') {
     idx <- match(table = rownames(X), x = ebpp_genes$Symbol)
   } else if (geneid == 'entrez') {
     idx <- match(table = rownames(X), x = ebpp_genes$Entrez)
-  } else if (geneid == 'pair') {
+  } else if (geneid == 'pairs') {
     return(X)
   } else {
     print("Please use gene symbols or entrez")
