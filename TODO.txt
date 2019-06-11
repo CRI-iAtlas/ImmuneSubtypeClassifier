@@ -16,7 +16,7 @@ TODO
 1. Switch to turn off feature selection... maybe just make ptail=1?
    -- and skip the rank sum test if ptail=1
 
-2. Allow entrez IDs or gene symbols (two fit models?)
+2. Allow entrez IDs or gene symbols (two fit models?)   ### or ensembl!
 
 3. Allow for missing genes.
    -- fill in matrix with empty values for missing genes.
@@ -28,8 +28,6 @@ TODO
         -- print warning
         -- add them to the matrix as zeros.
 
-5. feature importance ...
-   -- given 800 genes in a model
-   -- only have Gain scores for ~200 and most of them are very very low.
+5. Just binning gene values did not translate well to another gene quantification...
+   -- will try gene pairs based on most important genes
 
-    fi <- xgboost::xgb.importance(model=ens[[1]][[1]]$bst)

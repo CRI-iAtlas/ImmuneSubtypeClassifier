@@ -1,4 +1,17 @@
 
+#' testBinFun
+#' Get difference in sums
+#'
+#' @param G Binary values around a previously selected pivot point
+#' @param Ybin Binary phenotype vector.
+#' @return test result, numeric value, the rank sum test.
+#' @examples
+#' res1 <- testBinFun(G, Ybin)
+#' @export
+testBinFun <- function(G, Ybin) {
+  testres <- (sum(G[Ybin == 1])) - (sum(G[Ybin == 0]))
+  return(testres)
+}
 
 #' testFun
 #' Get difference in mean rank sums for a single gene
@@ -62,21 +75,30 @@ breakBin <- function(x, breakVec){
 #' @examples
 #' mod1 <- trainDataProc(Xmat, Yvec, ptail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
 #'
-trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster=1, ptail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
+trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster=1, dtype='continuous', ptail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
 
   Ybin <- ifelse(Yvec == cluster, yes = 1, no=0)
 
-  if (is.null(testRes)) {
+
+  if (dtype =='continuous' & is.null(testRes)) {
     testRes <- apply(Xmat, 1, FUN=function(a) testFun(a,Ybin))
+    Xscl <- scale(Xmat) # scale each sample, in columns
+    Xbinned <- apply(Xscl, 2, breakBin, breakVec) # bin each column
+    rownames(Xbinned) <- rownames(Xmat)
+    Xfeat <- featureSelection(Xbinned, Ybin, testRes, ptail)  # subset genes
+    Xbin <- t(Xfeat$Xsub)
+    genes <- Xfeat$Genes
+    return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
+  }
+  else if (dtype =='binary' & is.null(testRes)) {
+    testRes <- apply(Xmat, 1, FUN=function(a) testBinFun(a,Ybin))
+    Xfeat <- featureSelection(Xbin, Ybin, testRes, ptail)  # subset genes
+    Xbin <- t(Xfeat$Xsub)
+    genes <- Xfeat$Genes
+    return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
   }
 
-  Xscl <- scale(Xmat) # scale each sample, in columns
-  Xbinned <- apply(Xscl, 2, breakBin, breakVec) # bin each column
-  rownames(Xbinned) <- rownames(Xmat)
-  Xfeat <- featureSelection(Xbinned, Ybin, testRes, ptail)  # subset genes
-  Xbin <- t(Xfeat$Xsub)
-  genes <- Xfeat$Genes
-  return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
+
 }
 
 
