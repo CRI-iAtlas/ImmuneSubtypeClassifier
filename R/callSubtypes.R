@@ -95,7 +95,7 @@ callEnsemble <- function(X, cores = 2, path='data', geneids='symbol', dtype='con
 
   X <- geneMatch(X, geneids)
 
-  eList <- lapply(ens, function(ei) callSubtypes(ei, X, dtype))
+  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X, cores=2, dtype=dtype))
   eRes <- Reduce('+', eList) / length(eList)
   eRes <- eRes[,-1] # remove best calls
   colnames(eRes) <- 1:6 # names(mods)
