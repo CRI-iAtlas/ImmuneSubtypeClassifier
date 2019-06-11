@@ -92,7 +92,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster=1, dtype='c
   }
   else if (dtype =='binary' & is.null(testRes)) {
     testRes <- apply(Xmat, 1, FUN=function(a) testBinFun(a,Ybin))
-    Xfeat <- featureSelection(Xbin, Ybin, testRes, ptail)  # subset genes
+    Xfeat <- featureSelection(Xmat, Ybin, testRes, ptail)  # subset genes
     Xbin <- t(Xfeat$Xsub)
     genes <- Xfeat$Genes
     return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
