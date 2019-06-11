@@ -80,7 +80,7 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster=1, dtype='c
   Ybin <- ifelse(Yvec == cluster, yes = 1, no=0)
 
 
-  if (dtype =='continuous' & is.null(testRes)) {
+  if (dtype =='continuous' & is.null(testRes[1])) {
     testRes <- apply(Xmat, 1, FUN=function(a) testFun(a,Ybin))
     Xscl <- scale(Xmat) # scale each sample, in columns
     Xbinned <- apply(Xscl, 2, breakBin, breakVec) # bin each column
@@ -90,14 +90,17 @@ trainDataProc <- function(Xmat, Yvec, testRes=NULL, cores=2, cluster=1, dtype='c
     genes <- Xfeat$Genes
     return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
   }
-  else if (dtype =='binary' & is.null(testRes)) {
+  else if (dtype =='binary' & is.null(testRes[1])) {
     testRes <- apply(Xmat, 1, FUN=function(a) testBinFun(a,Ybin))
     Xfeat <- featureSelection(Xmat, Ybin, testRes, ptail)  # subset genes
     Xbin <- t(Xfeat$Xsub)
     genes <- Xfeat$Genes
     return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
   }
-
+  else {
+    print('ERROR')
+    return(NA)
+  }
 
 }
 
