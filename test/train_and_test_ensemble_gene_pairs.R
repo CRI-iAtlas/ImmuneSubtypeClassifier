@@ -50,25 +50,9 @@ ebpp <- ebpp2
 rm(ebpp2, ddx, ebpp_subset_genes, genestokeep, gi, gidx, values, Y)
 gc()
 
-binaryGene <- function(gidx, values) {
-  # gidx
-  pivotvalue <- values[gidx]
-  sapply(values, function(b) as.numeric(b >= pivotvalue))
-}
-
-resList <- list()
-for (gi in as.character(selectGenes$Gene)) {
-  print(gi)
-  if (gi %in% rownames(ebpp)) {
-    gidx <- which(rownames(ebpp) == gi)
-    resList[[gi]] <- apply(ebpp, 2, function(a) binaryGene(gidx, a))
-  }
-}
-
-save(resList, file='/home/davidgibbs/Work/iAtlas/Subtypes/Subtype-Classifier/feat_eng_data_set.rda')
 
 # main matrices
-Xmat <- as.matrix(X)
+Xmat <- as.matrix(ebpp)
 Y <- reportedScores[bs,"ClusterModel1"]
 
 #faster to start from here#
@@ -92,7 +76,7 @@ breakVec=c(0, 0.25, 0.5, 0.75, 1.0)
 params=list(max_depth = 5, eta = 0.5, nrounds = 100, nthread = 5, nfold=5)
 
 # list of models
-ens <- fitEnsembleModel(Xtrain, Ytrain, n=10, sampSize=0.7, ptail=0.02, params=params, breakVec=breakVec)
+ens <- fitEnsembleModel(Xtrain, Ytrain, n=10, sampSize=0.7, ptail=0.02, params=params, breakVec=breakVec, mtype='pairs')
 
 # calling subtypes on the test set
 calls <- callEnsemble(ens, Xtest)

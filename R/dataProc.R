@@ -1,31 +1,17 @@
 
-#' testBinFun
-#' Get difference in sums
-#'
-#' @param G Binary values around a previously selected pivot point
-#' @param Ybin Binary phenotype vector.
-#' @return test result, numeric value, the rank sum test.
-#' @examples
-#' res1 <- testBinFun(G, Ybin)
-#' @export
-testBinFun <- function(G, Ybin) {
-  testres <- (sum(G[Ybin == 1])) - (sum(G[Ybin == 0]))
-  return(testres)
-}
 
 #' testFun
 #' Get difference in mean rank sums for a single gene
 #'
-#' @param G Gene expression profile for single sample
+#' @param rankg Gene expression profile for single sample
 #' @param Ybin Binary phenotype vector.
 #' @return test result, numeric value, the rank sum test.
 #' @examples
 #' res1 <- testFun(G, Ybin)
 #' @export
-testFun <- function(G, Ybin) {
-  rankg <- rank(G)
-  testres <- (sum(rankg[Ybin == 0]) / sum(Ybin == 0)) - (sum(rankg[Ybin == 1]) / sum(Ybin == 1))
-  return(testres)
+testFun <- function(rankg, Ybin) {
+  res0 <- (sum(rankg[Ybin == 0]) / sum(Ybin == 0)) - (sum(rankg[Ybin == 1]) / sum(Ybin == 1))
+  return(res0)
 }
 
 #' featureSelection
@@ -70,6 +56,24 @@ binaryGene <- function(pivotvalue, values) {
 }
 
 
+makeGenePairs <- function(genes, Xsub) {
+
+  # for each gene
+  resList <- list()
+  for (gi in genes) {
+    # do pairs
+    res0 <- lapply(1:ncol(Xsub), function(i) as.numeric(gval[i] >= Xsub[,i]))
+    # make matrix of features.
+    resMat <- do.call('cbind', res0)
+    rownames(resMat) <- sapply(genes, function(gj) paste0(gi,':',gj))
+    resList[[gi]] <- resMat
+  }
+  Xbin <- do.call('rbind', resList)
+  colnames(Xbin) <- colnames(Xsub)
+  return(Xbin)
+}
+
+
 #' createPairsFeatures
 #' given a matrix and gene pairs, create binary features
 #' @param X One gene expression matrix
@@ -90,7 +94,6 @@ createPairsFeatures <- function(X, genes) {
 
   resList <- list() # then for each pivot gene
   for (gi in names(pairList)) {
-    print(gi)
     # assuming it's in the data ... really should be!
     if (gi %in% rownames(X)) {
       gs <- pairList[[gi]]                  ## can end up with the pivot gene in the genes...
@@ -130,12 +133,13 @@ createPairsFeatures <- function(X, genes) {
 #' @examples
 #' mod1 <- trainDataProc(Xmat, Yvec, ptail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
 #'
-trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
+trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0), mtype='pairs') {
 
   Ybin <- ifelse(Yvec == cluster, yes = 1, no=0)
 
-  if (dtype =='continuous') {
-    testRes <- apply(Xmat, 1, FUN=function(a) testFun(a,Ybin))
+  if (dtype =='continuous' & mtype == 'binned') {
+    Xrank <- apply(Xmat, 2, rank)
+    testRes <- apply(Xrank, 1, FUN=function(a) testFun(a,Ybin))
     Xscl <- scale(Xmat) # scale each sample, in columns
     Xbinned <- apply(Xscl, 2, breakBin, breakVec) # bin each column
     rownames(Xbinned) <- rownames(Xmat)
@@ -143,13 +147,14 @@ trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.05,
     Xbin <- t(Xfeat$Xsub)
     genes <- Xfeat$Genes
     return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
-  }
-  else if (dtype =='binary') {
-    testRes <- apply(Xmat, 1, FUN=function(a) testBinFun(a,Ybin))
+  } else if (dtype =='continuous' & mtype == 'pairs') {
+    Xrank <- apply(Xmat, 2, rank) # rank the expression within sample
+    testRes <- sapply(1:nrow(Xrank), function(gi) testFun(as.numeric(Xrank[gi,]), Ybin))  # get genes with big rank diffs.
     Xfeat <- featureSelection(Xmat, Ybin, testRes, ptail)  # subset genes
-    Xbin <- t(Xfeat$Xsub)
-    genes <- Xfeat$Genes
-    return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
+    Xbin <- makeGenePairs(Xfeat$Genes, Xfeat$Xsub)
+    Xbin <- t(Xbin)
+    genes <- colnames(Xbin)
+    return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec='pairs'))
   }
   else {
     print('ERROR')

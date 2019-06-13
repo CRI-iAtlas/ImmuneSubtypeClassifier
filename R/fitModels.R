@@ -73,14 +73,14 @@ cvFitOneModel <- function(Xbin, Ybin,
 #'
 fitSubtypeModel <- function(Xs, Ys, dtype='continuous', breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
   params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
-  ptail=0.05) {
+  ptail=0.05, mtype='pairs') {
 
   modelList <- list()
   allLabels <- unique(Ys)
 
   for (yi in 1:6) {  # was yi in allLabels
     print(paste0('Subtype: ',yi, '  processing data...'))
-    res0 <- trainDataProc(Xs, Ys, cluster=yi, dtype=dtype, ptail=ptail)
+    res0 <- trainDataProc(Xs, Ys, cluster=yi, dtype=dtype, ptail=ptail, mtype=mtype)
     dat  <- res0$dat
     csfr <- cvFitOneModel(dat$Xbin, dat$Ybin, params, breakVec, dat$Genes)
     modelList[[yi]] <- csfr
