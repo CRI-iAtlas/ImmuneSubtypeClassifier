@@ -10,7 +10,7 @@
 #' res1 <- testFun(G, Ybin)
 #' @export
 testFun <- function(rankg, Ybin) {
-  res0 <- (sum(rankg[Ybin == 0]) / sum(Ybin == 0)) - (sum(rankg[Ybin == 1]) / sum(Ybin == 1))
+  res0 <- (sum(rankg[Ybin == 0], na.rm = T) / sum(Ybin == 0, na.rm = T)) - (sum(rankg[Ybin == 1], na.rm = T) / sum(Ybin == 1, na.rm = T))
   return(res0)
 }
 
@@ -62,6 +62,7 @@ makeGenePairs <- function(genes, Xsub) {
   resList <- list()
   for (gi in genes) {
     # do pairs
+    gval <- as.numeric(Xsub[gi,])
     res0 <- lapply(1:ncol(Xsub), function(i) as.numeric(gval[i] >= Xsub[,i]))
     # make matrix of features.
     resMat <- do.call('cbind', res0)
