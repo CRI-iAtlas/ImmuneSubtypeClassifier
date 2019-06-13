@@ -31,3 +31,22 @@ TODO
 5. Just binning gene values did not translate well to another gene quantification...
    -- will try gene pairs based on most important genes
 
+6. -- take informative genes from binned expression model
+   -- take genes from immune signatures used for orig. immune subtyping
+   -- use informative genes as centers to generate top-scoring-pairs style features
+      i.e.  For a given sample, in subtype 2, gene_i is informative, then the signature genes are binned to 0,1 based on 
+            whether they're higher or lower in expression compared to the center gene. This includes the other informative
+            genes as well.
+   -- use the vary large set of binary features, now gene pairs, to train the ensemble model.
+   -- this involves a stronger cut for whether to take a gene or not when training models for a given subtype
+   -- then we have a set of classifiers, in the ensemble, each with a set of informative genes.
+   -- We need to then use those to retrain the models so that when a user brings in new data, that 
+      not all gene pairs need to be computed...
+   -- create data set (in /data) that details the gene pairs that need to be computed.
+   -- missing genes can be random 0s and 1s
+   -- Then when a new sample comes in, the gene pairs list is imported, and features are computed, 
+      subtypes called.
+      
+      
+
+Create classifier 
