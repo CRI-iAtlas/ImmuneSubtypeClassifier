@@ -75,8 +75,8 @@ kcalls <- callEnsemble(kirc2, path='~/Work/iAtlas/Subtypes/Subtype-Classifier/pa
 
 zcalls <- callEnsemble(z2, path='~/Work/iAtlas/Subtypes/Subtype-Classifier/pairs_ens_model.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
 
-
 table(Z=zcalls$BestCall, Kirc2=calls$BestCall)
+
 Kirc2
 Z   1   2   3   4
 1   1   0   0   4

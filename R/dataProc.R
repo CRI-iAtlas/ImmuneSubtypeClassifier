@@ -90,12 +90,17 @@ createPairsFeatures <- function(X, genes) {
 
   resList <- list() # then for each pivot gene
   for (gi in names(pairList)) {
+    print(gi)
     # assuming it's in the data ... really should be!
     if (gi %in% rownames(X)) {
       gs <- pairList[[gi]]                  ## can end up with the pivot gene in the genes...
       pval <- as.numeric(X[gi,])            ## pivot values across samples
       idx <- match(table=rownames(X), x=gs) ## get index to genes for this pivot
       Xsub <- X[idx,]                       ## subset the matrix, NAs for missing genes, pivot gene on top
+      if (class(Xsub) == 'numeric' & length(gs) == 1) {
+        Xsub <- matrix(data=Xsub, ncol=ncol(X), nrow=1)
+        colnames(Xsub) <- colnames(X)
+      }
       rownames(Xsub) <- gs                  ## give gene IDs
       res0 <- lapply(1:ncol(Xsub), function(a) binaryGene(pval[a], Xsub[,a]))  ## create binary values
       resList[[gi]] <- do.call('cbind', res0)
