@@ -109,6 +109,7 @@ createPairsFeatures <- function(X, genes) {
   }
   newMat <- do.call('rbind', resList)
   rownames(newMat) <- genes
+  newMat <- t(newMat)
   return(newMat)
 }
 

@@ -6,6 +6,7 @@ library(readr)
 
 devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force = T)
 reload(pkgload::inst('ImmuneSubtypeClassifier'))
+library(ImmuneSubtypeClassifier)
 
 load('~/ebpp_with_subtypes.rda')
 
@@ -13,7 +14,6 @@ reportedScores <- read_tsv('~/Work/PanCancer_Data/five_signature_mclust_ensemble
 reportedScores <- as.data.frame(reportedScores)
 rownames(reportedScores) <- str_replace_all(reportedScores$AliquotBarcode, pattern = '\\.', replacement = '-')
 
-library(ImmuneSubtypeClassifier)
 
 #gdc <- read.table('~/Work/iAtlas/Subtypes/Subtype-Classifier/GDC_Test/gdc_kirc_dat.csv', header=T, stringsAsFactors = F, sep=',')
 
@@ -65,7 +65,9 @@ plot(x=as.numeric(z2[1000,]), y=as.numeric(kirc2[1000,]))
 save(z2, kirc2, rep2, file='xena_test_data.rda')
 load('xena_test_data.rda')
 
-calls <- callEnsemble(kirc2, geneids = 'symbol', dtype = 'continuous', mtype='pairs')
+load('~/Work/iAtlas/Subtypes/Subtype-Classifier/pairs_ens_model.rda')
+
+kcalls <- callEnsemble(kirc2, geneids = 'symbol', dtype = 'continuous', mtype='pairs')
 
 zcalls <- callEnsemble(z, geneids = 'symbol')
 
