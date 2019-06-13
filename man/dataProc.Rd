@@ -5,12 +5,17 @@
 \title{dataProc
 Data preprocessing}
 \usage{
-dataProc(X, mods = NULL, ci = NA)
+dataProc(X, mods = NULL, ci = NA, dtype = "continous",
+  mtype = "pairs")
 }
 \arguments{
 \item{mods}{a model or list of models, containing breakpoints, used to bin expression data}
 
 \item{ci}{the cluster label and index into list of models}
+
+\item{dtype}{data type, continuous or binary}
+
+\item{mtype}{model type, binned or pairs}
 
 \item{Xmat}{Matrix of gene expression, genes in columns, samples in rows}
 }

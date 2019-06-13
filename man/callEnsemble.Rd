@@ -5,12 +5,15 @@
 \title{callEnsemble
 Make subtype calls for each sample}
 \usage{
-callEnsemble(ens, X, Y)
+callEnsemble(X, cores = 2, path = "data", geneids = "symbol",
+  dtype = "continuous", mtype = "pairs")
 }
 \arguments{
-\item{ens}{list, result of fitEnsembleModel}
+\item{X}{gene expression matrix, genes in row.names, samples in column.names}
 
-\item{X}{gene expression matrix, genes in rows, samples in columns}
+\item{path}{the path to the ensemble model, stored as RData, and named 'ens'}
+
+\item{geneids}{either hgnc for gene symbols or entrez ids. will be matched to the EB++ matrix}
 }
 \value{
 table, column 1 is best call, remaining columns are subtype prediction scores.

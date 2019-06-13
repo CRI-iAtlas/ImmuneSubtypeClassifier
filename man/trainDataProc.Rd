@@ -5,7 +5,7 @@
 \title{trainDataProc
 Data preprocessing}
 \usage{
-trainDataProc(Xmat, Yvec, testRes = NULL, cores = 2, cluster = 1,
+trainDataProc(Xmat, Yvec, cluster = 1, dtype = "continuous",
   ptail = 0.05, breakVec = c(0, 0.25, 0.5, 0.75, 1))
 }
 \arguments{
@@ -13,13 +13,13 @@ trainDataProc(Xmat, Yvec, testRes = NULL, cores = 2, cluster = 1,
 
 \item{Yvec}{Vector of phenotype, strings, 1, 2, etc}
 
-\item{testRes}{List of previously calculated test results, from testFun(.)}
-
 \item{cluster}{cluster name, string '1', as in Yvec}
 
 \item{ptail}{Binary phenotype vector.}
 
 \item{breakVec}{vector of break points, used to bin expression data}
+
+\item{testRes}{List of previously calculated test results, from testFun(.)}
 }
 \value{
 List of Xbin and Ybin, the binned, subset, and binarized values.

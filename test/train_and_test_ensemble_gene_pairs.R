@@ -98,7 +98,8 @@ ens <- fitEnsembleModel(Xtrain, Ytrain, n=10, sampSize=0.7, ptail=0.02, params=p
 calls <- callEnsemble(ens, Xtest)
 
 # model performance plots
-perfs <- subtypePerf(calls, Ytest, mtype = 'binary')
+perfs <- subtypePerf(calls, Ytest)
+
 
 library(gridExtra)
 x <- grid.arrange(perfs[[1]]$plot,perfs[[2]]$plot,perfs[[3]]$plot,perfs[[4]]$plot,perfs[[5]]$plot,perfs[[6]]$plot, ncol=6, nrow=1 )

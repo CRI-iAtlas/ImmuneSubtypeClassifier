@@ -42,7 +42,7 @@ geneMatch <- function(X, geneid='pairs') {
 #' @examples
 #' calli <- callOneSubtype(mods, X, 4)
 #'
-callOneSubtype <- function(mods, X, ci, dtype) {
+callOneSubtype <- function(mods, X, ci, dtype, mtype) {
 
   # Xbin needs to have the same columns as the training matrix...
   print(paste0('calling subtype ', ci))
@@ -64,9 +64,9 @@ callOneSubtype <- function(mods, X, ci, dtype) {
 #' @examples
 #' calls <- callSubtypes(mods, X)
 #'
-callSubtypes <- function(mods, X, cores, dtype) {
+callSubtypes <- function(mods, X, cores, dtype, mtype) {
 
-  pList <- lapply(1:6, function(mi) callOneSubtype(mods, X, mi, dtype))  # was lapply(names(mods), ... )
+  pList <- lapply(1:6, function(mi) callOneSubtype(mods, X, mi, dtype, mtype))  # was lapply(names(mods), ... )
   pMat  <- do.call('cbind', pList)
   colnames(pMat) <- 1:6 # names(mods)
   bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
@@ -85,7 +85,8 @@ callSubtypes <- function(mods, X, cores, dtype) {
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(X, cores = 2, path='data', geneids='symbol', dtype='continuous') {
+callEnsemble <- function(X, cores = 2, path='data', geneids='symbol',
+                         dtype='continuous', mtype='pairs') {
 
   if (path == 'data') {
     data("ensemble_model")
@@ -95,7 +96,7 @@ callEnsemble <- function(X, cores = 2, path='data', geneids='symbol', dtype='con
 
   X <- geneMatch(X, geneids)
 
-  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X, cores=2, dtype=dtype))
+  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X, cores=2, dtype=dtype, mtype=mtype))
   eRes <- Reduce('+', eList) / length(eList)
   eRes <- eRes[,-1] # remove best calls
   colnames(eRes) <- 1:6 # names(mods)

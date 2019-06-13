@@ -61,7 +61,11 @@ all(rownames(z2) == rownames(kirc2))
 
 plot(x=as.numeric(z2[1000,]), y=as.numeric(kirc2[1000,]))
 
-calls <- callEnsemble(kirc2, geneids = 'symbol')
+
+save(z2, kirc2, rep2, file='xena_test_data.rda')
+load('xena_test_data.rda')
+
+calls <- callEnsemble(kirc2, geneids = 'symbol', dtype = 'continuous', mtype='pairs')
 
 zcalls <- callEnsemble(z, geneids = 'symbol')
 

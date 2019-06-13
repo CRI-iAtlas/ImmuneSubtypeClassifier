@@ -62,6 +62,57 @@ breakBin <- function(x, breakVec){
 }
 
 
+
+binaryGene <- function(values) {
+  # gidx
+  pivotvalue <- values[1]
+  values <- values[-1]
+  res0 <- sapply(values, function(b) as.numeric(b >= pivotvalue))
+  res0[is.na(res0)] <- rbinom(n = sum(is.na(res0)), prob = 0.5, 1)  ## replace NAs with random values
+  return(res0)
+}
+
+
+#' createPairsFeatures
+#' given a matrix and gene pairs, create binary features
+#' @param X One gene expression matrix
+#' @param genePairs a vector of gene pairs from the ensemble list
+#' @return xbin, binned expression profile
+#' @examples
+#' Xsub <- createPairsFeatures(Xmat, genepairs)
+#'
+createPairsFeatures <- function(X, genes) {
+
+  genePairs <- strsplit(genes, ':')
+  gidx <- rownames(X)
+
+  # first convert the gene pairs to a named list
+  # where each entry of the list is the genes for a given pivot-gene
+  pairList <- list()
+  for(gi in genePairs) {
+    pairList[[gi[1]]] <- c(pairList[[gi[1]]], gi[2])
+  }
+
+  resList <- list() # then for each pivot gene
+  for (gi in names(pairList)) {
+    # assuming it's in the data ... really should be!
+    if (gi %in% rownames(X)) {
+      idx <- match(table=rownames(X), x=c(gi,pairList[[gi]])) ## get index to genes for this pivot
+      Xsub <- X[idx,]                                         ## subset the matrix, NAs for missing genes, pivot gene on top
+      rownames(Xsub) <- c(gi,pairList[[gi]])                      ## give gene IDs
+      resList[[gi]] <- apply(Xsub, 2, function(a) binaryGene(a))  ## create binary values
+    } else { # else we need to include some dummy rows
+      randMat <- matrix(data=rbinom(n = length(pairList[[gi]]) * ncol(X), prob = 0.5, 1), ncol=ncol(X))
+      colnames(randMat) <- colnames(X)
+      resList[[gi]] <- randMat
+    }
+  }
+  newMat <- do.call('rbind', resList)
+  rownames(newMat) <- genes
+  return(newMat)
+}
+
+
 #' trainDataProc
 #' Data preprocessing
 #' @export
@@ -111,11 +162,12 @@ trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.05,
 #' @param mods a model or list of models, containing breakpoints, used to bin expression data
 #' @param ci the cluster label and index into list of models
 #' @param dtype data type, continuous or binary
+#' @param mtype model type, binned or pairs
 #' @return Xbin, the binned, subset, and binarized values.
 #' @examples
 #' mod1 <- dataProc(X, mods)
 #'
-dataProc <- function(X, mods=NULL, ci=NA, dtype = 'continous') {
+dataProc <- function(X, mods=NULL, ci=NA, dtype = 'continous', mtype = 'pairs') {
 
   Xmat <- as.matrix(X)
 
@@ -127,14 +179,21 @@ dataProc <- function(X, mods=NULL, ci=NA, dtype = 'continous') {
     genes    <- mods$genes
   }
 
-  if (dtype == 'continuous') {
-    Xscl <- scale(Xmat) # scale each sample, in columns
-    Xbin <- apply(Xscl, 2, breakBin, breakVec)
-    rownames(Xbin) <- rownames(X)
-    idx <-  match(table = rownames(X), x = genes)
-    Xbin <- t(Xbin[idx,])
-    colnames(Xbin) <- genes
+  if (dtype == 'continuous' & mtype == 'binned') {
+      # here we have continuous expression values and we're doing the binned model
+      # so we need to bin the data
+      Xscl <- scale(Xmat) # scale each sample, in columns
+      Xbin <- apply(Xscl, 2, breakBin, breakVec)
+      rownames(Xbin) <- rownames(X)
+      idx <-  match(table = rownames(X), x = genes)
+      Xbin <- t(Xbin[idx,])
+      colnames(Xbin) <- genes
+  } else if (dtype == 'continuous' & mtype == 'pairs') {
+      # here we have expression data, and we're using the pairs model
+      # so we need to make pairs features.
+      Xbin <- createPairsFeatures(X, genes)
   } else if (dtype == 'binary') {
+    # here we already have pairs features.
     idx <-  match(table = rownames(X), x = genes)
     Xbin <- t(X[idx,])
     colnames(Xbin) <- genes
