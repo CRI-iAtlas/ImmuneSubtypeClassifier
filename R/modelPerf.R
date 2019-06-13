@@ -75,19 +75,19 @@ subtypePerf <- function(calls, Ytest) {
 #' @examples
 #' mod1 <- getImportance(mods, type='ensemble')
 #'
-subtypePerf <- function(mods, mtype='ensemble', ci=1) {
+importantFeatures <- function(mods, mtype='ensemble', ci=1) {
 
-  if (type == 'ensemble') {
+  if (mtype == 'ensemble') {
     el <- 1:length(mods) # size of ensemble
     si <- 1:6           # for each subtype
-  } else if (type == 'subtypelist') {
+  } else if (mtype == 'subtypelist') {
     el <- 1
     si <- 1:6
-  } else if (type == 'single') {
+  } else if (mtype == 'single') {
     el <- 1
     si <- ci
   } else {
-    print('Please use type: single, list, or ensemble')
+    print('Please use mtype: single, list, or ensemble')
     return(NA)
   }
 

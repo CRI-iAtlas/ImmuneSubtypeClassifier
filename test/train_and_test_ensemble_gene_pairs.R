@@ -13,20 +13,23 @@ library(ImmuneSubtypeClassifier)
 
 load('/home/davidgibbs/Work/iAtlas/Subtypes/Subtype-Classifier/ensemble_classifier_impt_genes.rda')
 
-# PanCancer batch corrected expression matrix
-##ebpp <- read_tsv('~/Work/PanCancer_Data/EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv')
-#ebpp <- read_table('/home/davidgibbs/Work/iAtlas/Subtypes/Cluster_Work/ebppSubset.tsv.bz2')
-load('/home/davidgibbs/Work/iAtlas/Subtypes/Cluster_Work/ebpp_subset.rda')
-
-
 # add to a data dir.
 reportedScores <- read.table('~/Work/PanCancer_Data/five_signature_mclust_ensemble_results.tsv.gz', sep='\t', header=T, stringsAsFactors = F)
 rownames(reportedScores) <- str_replace_all(reportedScores$AliquotBarcode, pattern = '\\.', replacement = '-')
 
+# PanCancer batch corrected expression matrix
+ebpp <- read_tsv('~/Work/PanCancer_Data/EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv')
+#ebpp <- read_table('/home/davidgibbs/Work/iAtlas/Subtypes/Cluster_Work/ebppSubset.tsv.bz2')
+##load('/home/davidgibbs/Work/iAtlas/Subtypes/Cluster_Work/ebpp_subset.rda') ### TURNS out many of the important genes not here...
+
+geneList <- str_split(ebpp$gene_id, pattern='\\|')
+geneSymbols <- unlist( lapply(geneList, function(a) a[1]) )
+# remove duplicate gene names (mostly '?'s)
+ddx <- which(duplicated(geneSymbols))
+
+
 # shared barcodes
 bs <- intersect(rownames(reportedScores),colnames(datSubset))
-
-ebpp <- datSubset[,bs]
 
 selectGenes <-
 allgenes %>%
@@ -35,6 +38,17 @@ allgenes %>%
   arrange(desc(GainSum), .by_group=T) %>%
   top_n(n=10)
 
+ebpp2 <- ebpp[geneSymbols %in% c(as.character(selectGenes$Gene), ebpp_subset_genes),]
+ebpp2$gene_id <- as.character(geneSymbols[(geneSymbols %in% c(as.character(selectGenes$Gene), ebpp_subset_genes))])
+ddx <- which(duplicated(ebpp2$gene_id))
+ebpp2 <- ebpp2[-ddx,]
+genestokeep <- ebpp2$gene_id
+ebpp2 <- as.matrix(ebpp2[,-1])
+rownames(ebpp2) <- genestokeep
+
+ebpp <- ebpp2
+rm(ebpp2, ddx, ebpp_subset_genes, genestokeep, gi, gidx, values, Y)
+gc()
 
 binaryGene <- function(gidx, values) {
   # gidx
@@ -84,8 +98,8 @@ ens <- fitEnsembleModel(Xtrain, Ytrain, n=10, sampSize=0.7, ptail=0.02, params=p
 calls <- callEnsemble(ens, Xtest)
 
 # model performance plots
-perfs <- subtypePerf(calls, Ytest)
+perfs <- subtypePerf(calls, Ytest, mtype = 'binary')
 
-  library(gridExtra)
-  x <- grid.arrange(perfs[[1]]$plot,perfs[[2]]$plot,perfs[[3]]$plot,perfs[[4]]$plot,perfs[[5]]$plot,perfs[[6]]$plot, ncol=6, nrow=1 )
-  ggsave(x, file='roc_plot.png')
+library(gridExtra)
+x <- grid.arrange(perfs[[1]]$plot,perfs[[2]]$plot,perfs[[3]]$plot,perfs[[4]]$plot,perfs[[5]]$plot,perfs[[6]]$plot, ncol=6, nrow=1 )
+ggsave(x, file='roc_plot.png')
