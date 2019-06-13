@@ -63,10 +63,7 @@ breakBin <- function(x, breakVec){
 
 
 
-binaryGene <- function(values) {
-  # gidx
-  pivotvalue <- values[1]
-  values <- values[-1]
+binaryGene <- function(pivotvalue, values) {
   res0 <- sapply(values, function(b) as.numeric(b >= pivotvalue))
   res0[is.na(res0)] <- rbinom(n = sum(is.na(res0)), prob = 0.5, 1)  ## replace NAs with random values
   return(res0)
@@ -83,11 +80,9 @@ binaryGene <- function(values) {
 #'
 createPairsFeatures <- function(X, genes) {
 
-  genePairs <- strsplit(genes, ':')
-  gidx <- rownames(X)
-
   # first convert the gene pairs to a named list
   # where each entry of the list is the genes for a given pivot-gene
+  genePairs <- strsplit(genes, ':')
   pairList <- list()
   for(gi in genePairs) {
     pairList[[gi[1]]] <- c(pairList[[gi[1]]], gi[2])
@@ -97,15 +92,13 @@ createPairsFeatures <- function(X, genes) {
   for (gi in names(pairList)) {
     # assuming it's in the data ... really should be!
     if (gi %in% rownames(X)) {
-      gs <- unique(c(gi,pairList[[gi]]))  ## can end up with the pivot gene in the genes... guarentee
-      if (gs[1] != gi) {
-        print('ERROR: first gene does not match pivot gene')
-        return(NA)
-      }
+      gs <- pairList[[gi]]                  ## can end up with the pivot gene in the genes...
+      pval <- as.numeric(X[gi,])            ## pivot values across samples
       idx <- match(table=rownames(X), x=gs) ## get index to genes for this pivot
-      Xsub <- X[idx,]                                         ## subset the matrix, NAs for missing genes, pivot gene on top
-      rownames(Xsub) <- gs                                    ## give gene IDs
-      resList[[gi]] <- apply(Xsub, 2, function(a) binaryGene(a))  ## create binary values
+      Xsub <- X[idx,]                       ## subset the matrix, NAs for missing genes, pivot gene on top
+      rownames(Xsub) <- gs                  ## give gene IDs
+      res0 <- lapply(1:ncol(Xsub), function(a) binaryGene(pval[a], Xsub[,a]))  ## create binary values
+      resList[[gi]] <- do.call('cbind', res0)
     } else { # else we need to include some dummy rows
       randMat <- matrix(data=rbinom(n = length(pairList[[gi]]) * ncol(X), prob = 0.5, 1), ncol=ncol(X))
       colnames(randMat) <- colnames(X)

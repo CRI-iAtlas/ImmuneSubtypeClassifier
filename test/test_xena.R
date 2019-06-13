@@ -63,11 +63,17 @@ plot(x=as.numeric(z2[1000,]), y=as.numeric(kirc2[1000,]))
 
 
 save(z2, kirc2, rep2, file='xena_test_data.rda')
+
+#######################################################################################33
+devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force = T)
+reload(pkgload::inst('ImmuneSubtypeClassifier'))
+library(ImmuneSubtypeClassifier)
+
 load('xena_test_data.rda')
 
 kcalls <- callEnsemble(kirc2, path='~/Work/iAtlas/Subtypes/Subtype-Classifier/pairs_ens_model.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
 
-zcalls <- callEnsemble(z, geneids = 'symbol')
+zcalls <- callEnsemble(z2, path='~/Work/iAtlas/Subtypes/Subtype-Classifier/pairs_ens_model.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
 
 
 table(Z=zcalls$BestCall, Kirc2=calls$BestCall)
