@@ -65,9 +65,7 @@ plot(x=as.numeric(z2[1000,]), y=as.numeric(kirc2[1000,]))
 save(z2, kirc2, rep2, file='xena_test_data.rda')
 load('xena_test_data.rda')
 
-load('~/Work/iAtlas/Subtypes/Subtype-Classifier/pairs_ens_model.rda')
-
-kcalls <- callEnsemble(kirc2, geneids = 'symbol', dtype = 'continuous', mtype='pairs')
+kcalls <- callEnsemble(kirc2, path='~/Work/iAtlas/Subtypes/Subtype-Classifier/pairs_ens_model.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
 
 zcalls <- callEnsemble(z, geneids = 'symbol')
 

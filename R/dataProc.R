@@ -97,9 +97,14 @@ createPairsFeatures <- function(X, genes) {
   for (gi in names(pairList)) {
     # assuming it's in the data ... really should be!
     if (gi %in% rownames(X)) {
-      idx <- match(table=rownames(X), x=c(gi,pairList[[gi]])) ## get index to genes for this pivot
+      gs <- unique(c(gi,pairList[[gi]]))  ## can end up with the pivot gene in the genes... guarentee
+      if (gs[1] != gi) {
+        print('ERROR: first gene does not match pivot gene')
+        return(NA)
+      }
+      idx <- match(table=rownames(X), x=gs) ## get index to genes for this pivot
       Xsub <- X[idx,]                                         ## subset the matrix, NAs for missing genes, pivot gene on top
-      rownames(Xsub) <- c(gi,pairList[[gi]])                      ## give gene IDs
+      rownames(Xsub) <- gs                                    ## give gene IDs
       resList[[gi]] <- apply(Xsub, 2, function(a) binaryGene(a))  ## create binary values
     } else { # else we need to include some dummy rows
       randMat <- matrix(data=rbinom(n = length(pairList[[gi]]) * ncol(X), prob = 0.5, 1), ncol=ncol(X))
