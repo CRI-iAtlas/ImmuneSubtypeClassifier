@@ -57,8 +57,8 @@ Y <- reportedScores[bs,"ClusterModel1"]
 
 #faster to start from here#
 #save(Xmat, Y, geneList, file='~/ebpp_with_subtypes.rda')
-#load('~/ebpp_with_subtypes.rda')
-
+load('~/ebpp_with_subtypes.rda')
+#load('~/ebpp_subset_genes.rda')
 # sample our training and testing groups
 idx <- sample(1:ncol(Xmat), size = 0.2 * ncol(Xmat), replace=F)
 jdx <- setdiff(1:ncol(Xmat), idx)

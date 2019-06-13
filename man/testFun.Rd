@@ -5,10 +5,10 @@
 \title{testFun
 Get difference in mean rank sums for a single gene}
 \usage{
-testFun(G, Ybin)
+testFun(rankg, Ybin)
 }
 \arguments{
-\item{G}{Gene expression profile for single sample}
+\item{rankg}{Gene expression profile for single sample}
 
 \item{Ybin}{Binary phenotype vector.}
 }

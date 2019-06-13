@@ -6,7 +6,7 @@
 Data preprocessing}
 \usage{
 trainDataProc(Xmat, Yvec, cluster = 1, dtype = "continuous",
-  ptail = 0.05, breakVec = c(0, 0.25, 0.5, 0.75, 1))
+  ptail = 0.05, breakVec = c(0, 0.25, 0.5, 0.75, 1), mtype = "pairs")
 }
 \arguments{
 \item{Xmat}{Matrix of gene expression, samples in columns, genes in rows}
