@@ -54,6 +54,10 @@ gc()
 Xmat <- as.matrix(ebpp)
 Y <- reportedScores[bs,"ClusterModel1"]
 
+devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force = T)
+reload(pkgload::inst('ImmuneSubtypeClassifier'))
+library(ImmuneSubtypeClassifier)
+
 #faster to start from here#
 #save(Xmat, Y, geneList, file='~/ebpp_with_subtypes.rda')
 load('~/ebpp_with_subtypes.rda')
@@ -78,9 +82,27 @@ params=list(max_depth = 5, eta = 0.5, nrounds = 100, nthread = 5, nfold=5)
 
 # list of models
 ens <- fitEnsembleModel(Xtrain, Ytrain, n=10, sampSize=0.7, ptail=0.002, params=params, breakVec=breakVec)
+save(ens, file='~/ens.rda')
+
+smat1 <- trainDataProc(Xtest, Ytest, cluster=1)
+dim(smat1$dat$Xbin) # 2304 columns
+
+smatMod <- cvFitOneModel(smat1$dat$Xbin, smat1$dat$Ybin, params=params, genes=colnames(smat1$dat$Xbin))
+smatMod$bst$nfeatures
+#[1] 2304
+
+smat2 <- dataProc(X = Xtest, mods=smatMod, ci = 1, dtype = 'continuous', mtype = 'pairs')
+dim(smat2)
+#[1] 1825 2304
+
+all(colnames(smat2) == colnames(smat1))
+#[1] TRUE
+
+smat1$dat$Xbin[1:5,1:5]
+smat2[1:5,1:5]
 
 # calling subtypes on the test set
-calls <- callEnsemble(ens, Xtest)
+calls <- callEnsemble(ens, Xtest, path = '~/ens.rda')
 
 # model performance plots
 perfs <- subtypePerf(calls, Ytest)

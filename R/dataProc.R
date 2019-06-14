@@ -63,7 +63,7 @@ makeGenePairs <- function(genes, Xsub) {
   for (gi in genes) {
     # do pairs
     gval <- as.numeric(Xsub[gi,])
-    res0 <- lapply(1:ncol(Xsub), function(i) as.numeric(gval[i] >= Xsub[,i]))
+    res0 <- lapply(1:ncol(Xsub), function(i) as.numeric(Xsub[,i] >= gval[i]))
     # make matrix of features.
     resMat <- do.call('cbind', res0)
     rownames(resMat) <- sapply(genes, function(gj) paste0(gi,':',gj))
@@ -177,7 +177,7 @@ trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.01,
 #' @examples
 #' mod1 <- dataProc(X, mods)
 #'
-dataProc <- function(X, mods=NULL, ci=NA, dtype = 'continous', mtype = 'pairs') {
+dataProc <- function(X, mods=NULL, ci=NA, dtype = 'continuous', mtype = 'pairs') {
 
   Xmat <- as.matrix(X)
 
