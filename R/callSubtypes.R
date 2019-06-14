@@ -94,7 +94,9 @@ callEnsemble <- function(X, cores = 2, path='data',
     load(path)
   }
 
-  X <- geneMatch(X, geneids)
+  if (mtype == 'binned') {
+    X <- geneMatch(X, geneids)    
+  }
 
   eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X, cores=2, dtype=dtype, mtype=mtype))
   eRes <- Reduce('+', eList) / length(eList)

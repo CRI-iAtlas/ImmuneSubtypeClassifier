@@ -134,7 +134,7 @@ createPairsFeatures <- function(X, genes) {
 #' @examples
 #' mod1 <- trainDataProc(Xmat, Yvec, ptail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
 #'
-trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.05, breakVec=c(0, 0.25, 0.5, 0.75, 1.0), mtype='pairs') {
+trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.01, breakVec=c(0, 0.25, 0.5, 0.75, 1.0), mtype='pairs') {
 
   Ybin <- ifelse(Yvec == cluster, yes = 1, no=0)
 
