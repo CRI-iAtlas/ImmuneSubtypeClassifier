@@ -50,7 +50,7 @@ breakBin <- function(x, breakVec){
 
 
 binaryGene <- function(pivotvalue, values) {
-  res0 <- sapply(values, function(b) as.numeric(b >= pivotvalue))
+  res0 <- sapply(values, function(b) as.numeric(b < pivotvalue))
   res0[is.na(res0)] <- rbinom(n = sum(is.na(res0)), prob = 0.5, 1)  ## replace NAs with random values
   return(res0)
 }
