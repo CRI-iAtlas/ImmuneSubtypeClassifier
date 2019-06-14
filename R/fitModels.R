@@ -119,6 +119,7 @@ fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.7, dtype='continuous', brea
       Xs2 <- Xs[,jdx]
       Ys2 <- Ys[jdx]
       eList[[i]] <- fitSubtypeModel(Xs=Xs2, Ys=Ys2, breakVec=breakVec, params=params, dtype=dtype, ptail=ptail)
+
       })
   }
 

@@ -57,7 +57,9 @@ Y <- reportedScores[bs,"ClusterModel1"]
 #faster to start from here#
 #save(Xmat, Y, geneList, file='~/ebpp_with_subtypes.rda')
 load('~/ebpp_with_subtypes.rda')
-#load('~/ebpp_subset_genes.rda')
+load('~/ebpp_subset_genes.rda')
+Xmat <- Xmat[ebpp_subset_genes,]
+
 # sample our training and testing groups
 idx <- sample(1:ncol(Xmat), size = 0.2 * ncol(Xmat), replace=F)
 jdx <- setdiff(1:ncol(Xmat), idx)
@@ -75,7 +77,7 @@ breakVec=c(0, 0.25, 0.5, 0.75, 1.0)
 params=list(max_depth = 5, eta = 0.5, nrounds = 100, nthread = 5, nfold=5)
 
 # list of models
-ens <- fitEnsembleModel(Xtrain, Ytrain, n=10, sampSize=0.7, ptail=0.001, params=params, breakVec=breakVec, mtype='pairs')
+ens <- fitEnsembleModel(Xtrain, Ytrain, n=10, sampSize=0.7, ptail=0.002, params=params, breakVec=breakVec)
 
 # calling subtypes on the test set
 calls <- callEnsemble(ens, Xtest)

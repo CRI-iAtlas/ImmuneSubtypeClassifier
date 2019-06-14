@@ -2,7 +2,21 @@
 TODO
 ----
 
+-3  The generation of gene pair features was changed from taking pivot point
+    genes from training the binned model, to just considering all possible genes.
+    At a 
+
+-2. The feature selection was a little backwards.
+    Ranks were being computed across samples, for one gene,
+    instead of across genes for one sample.
+    This could have led to badly picked binned genes,
+    which were then used to produce gene-pair features.
+    It has been fixed at this point.
+
 -1.  What should be done with NAs in the incoming data? 0s?
+     I have made the missing genes be random 0,1 draws, as not
+     to give any additional information one way or another, but 
+     will make the classifier happy, since that feature is present.
 
 0. Parameters to optimize:
    -- reducing number of needed genes to minimum
@@ -47,6 +61,9 @@ TODO
    -- Then when a new sample comes in, the gene pairs list is imported, and features are computed, 
       subtypes called.
       
+7. If we do used binned gene expression data, the ebpp_gene data table is in inst/data
+
+
       
 
 Create classifier 
