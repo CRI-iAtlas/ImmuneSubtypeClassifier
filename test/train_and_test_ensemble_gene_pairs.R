@@ -11,7 +11,6 @@ devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force = T)
 reload(pkgload::inst('ImmuneSubtypeClassifier'))
 library(ImmuneSubtypeClassifier)
 
-
 # add to a data dir.
 reportedScores <- read.table('~/Work/PanCancer_Data/five_signature_mclust_ensemble_results.tsv.gz', sep='\t', header=T, stringsAsFactors = F)
 rownames(reportedScores) <- str_replace_all(reportedScores$AliquotBarcode, pattern = '\\.', replacement = '-')

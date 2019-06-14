@@ -50,7 +50,7 @@ breakBin <- function(x, breakVec){
 
 
 binaryGene <- function(pivotvalue, values) {
-  res0 <- sapply(values, function(b) as.numeric(b < pivotvalue))
+  res0 <- sapply(values, function(b) as.numeric(b <= pivotvalue))
   res0[is.na(res0)] <- rbinom(n = sum(is.na(res0)), prob = 0.5, 1)  ## replace NAs with random values
   return(res0)
 }
@@ -63,7 +63,7 @@ makeGenePairs <- function(genes, Xsub) {
   for (gi in genes) {
     # do pairs
     gval <- as.numeric(Xsub[gi,])
-    res0 <- lapply(1:ncol(Xsub), function(i) as.numeric(Xsub[,i] >= gval[i]))
+    res0 <- lapply(1:ncol(Xsub), function(i) binaryGene(gval[i], Xsub[,i]))
     # make matrix of features.
     resMat <- do.call('cbind', res0)
     rownames(resMat) <- sapply(genes, function(gj) paste0(gi,':',gj))
