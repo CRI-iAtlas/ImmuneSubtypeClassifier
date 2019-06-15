@@ -71,7 +71,7 @@ cvFitOneModel <- function(Xbin, Ybin,
 #' @examples
 #' mods <- fitSubtypeModel(Xs, Ys, params)
 #'
-fitSubtypeModel <- function(Xs, Ys, dtype='continuous', breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
+fitSubtypeModel <- function(Xs, Ys, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
   params=list(max_depth = 2, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
   ptail=0.05) {
 
@@ -80,7 +80,7 @@ fitSubtypeModel <- function(Xs, Ys, dtype='continuous', breakVec=c(0, 0.25, 0.5,
 
   for (yi in 1:6) {  # was yi in allLabels
     print(paste0('Subtype: ',yi, '  processing data...'))
-    res0 <- trainDataProc(Xs, Ys, cluster=yi, dtype=dtype, ptail=ptail)
+    res0 <- trainDataProc(Xs, Ys, cluster=yi, ptail=ptail)
     print(paste0('   training using ', dim(res0$dat$Xbin), ' features x samples'))
     dat  <- res0$dat
     csfr <- cvFitOneModel(dat$Xbin, dat$Ybin, params, breakVec, dat$Genes)
@@ -106,7 +106,7 @@ fitSubtypeModel <- function(Xs, Ys, dtype='continuous', breakVec=c(0, 0.25, 0.5,
 #' @examples
 #' mods <- fitEnsembleModel(Xs, Ys, n, sampSize, dtype, breakVec, params)
 #'
-fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.7, dtype='continuous', breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
+fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.7, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
                             params=list(max_depth = 5, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
                             ptail=0.05) {
 
@@ -118,7 +118,7 @@ fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.7, dtype='continuous', brea
       jdx <- sample(1:ncol(Xs), size = sampSize * ncol(Xs), replace=F)
       Xs2 <- Xs[,jdx]
       Ys2 <- Ys[jdx]
-      eList[[i]] <- fitSubtypeModel(Xs=Xs2, Ys=Ys2, breakVec=breakVec, params=params, dtype=dtype, ptail=ptail)
+      eList[[i]] <- fitSubtypeModel(Xs=Xs2, Ys=Ys2, breakVec=breakVec, params=params, ptail=ptail)
 
       })
   }

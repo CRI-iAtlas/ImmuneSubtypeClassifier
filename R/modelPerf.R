@@ -35,7 +35,7 @@ modelPerf <- function(bst, Xbin, Ybin, title='perf1') {
 modelPerf2 <- function(calls, Ytest, subtype=NA) {
 
   pred <- calls[, which(names(calls) == subtype)]
-  Ybin <- sapply(Ytest, function(a) if (a == subtype){1} else {0})
+  Ybin <- ifelse(Ytest == subtype, yes = 1, no=0)
 
   err <- mean(as.numeric(pred > 0.5) != Ybin)
 

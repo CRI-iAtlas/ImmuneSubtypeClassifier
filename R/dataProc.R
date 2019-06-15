@@ -78,7 +78,7 @@ makeGenePairs <- function(genes, Xsub) {
 #' createPairsFeatures
 #' given a matrix and gene pairs, create binary features
 #' @param X One gene expression matrix
-#' @param genePairs a vector of gene pairs from the ensemble list
+#' @param genePairs a vector of gene pairs
 #' @return xbin, binned expression profile
 #' @examples
 #' Xsub <- createPairsFeatures(Xmat, genepairs)
@@ -116,52 +116,7 @@ createPairsFeatures <- function(X, genes) {
   }
   newMat <- do.call('rbind', resList)
   rownames(newMat) <- genes
-  newMat <- t(newMat)
   return(newMat)
-}
-
-
-#' trainDataProc
-#' Data preprocessing
-#' @export
-#' @param Xmat Matrix of gene expression, samples in columns, genes in rows
-#' @param Yvec Vector of phenotype, strings, 1, 2, etc
-#' @param testRes List of previously calculated test results, from testFun(.)
-#' @param cluster cluster name, string '1', as in Yvec
-#' @param ptail Binary phenotype vector.
-#' @param breakVec vector of break points, used to bin expression data
-#' @return List of Xbin and Ybin, the binned, subset, and binarized values.
-#' @examples
-#' mod1 <- trainDataProc(Xmat, Yvec, ptail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
-#'
-trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.01, breakVec=c(0, 0.25, 0.5, 0.75, 1.0), mtype='pairs') {
-
-  Ybin <- ifelse(Yvec == cluster, yes = 1, no=0)
-
-  if (dtype =='continuous' & mtype == 'binned') {
-    Xrank <- apply(Xmat, 2, rank)
-    testRes <- apply(Xrank, 1, FUN=function(a) testFun(a,Ybin))
-    Xscl <- scale(Xmat) # scale each sample, in columns
-    Xbinned <- apply(Xscl, 2, breakBin, breakVec) # bin each column
-    rownames(Xbinned) <- rownames(Xmat)
-    Xfeat <- featureSelection(Xbinned, Ybin, testRes, ptail)  # subset genes
-    Xbin <- t(Xfeat$Xsub)
-    genes <- Xfeat$Genes
-    return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
-  } else if (dtype =='continuous' & mtype == 'pairs') {
-    Xrank <- apply(Xmat, 2, rank) # rank the expression within sample
-    testRes <- sapply(1:nrow(Xrank), function(gi) testFun(as.numeric(Xrank[gi,]), Ybin))  # get genes with big rank diffs.
-    Xfeat <- featureSelection(Xmat, Ybin, testRes, ptail)  # subset genes
-    Xbin <- makeGenePairs(Xfeat$Genes, Xfeat$Xsub)
-    Xbin <- t(Xbin)
-    genes <- colnames(Xbin)
-    return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec='pairs'))
-  }
-  else {
-    print('ERROR')
-    return(NA)
-  }
-
 }
 
 
@@ -171,47 +126,81 @@ trainDataProc <- function(Xmat, Yvec, cluster=1, dtype='continuous', ptail=0.01,
 #' @param Xmat Matrix of gene expression, genes in columns, samples in rows
 #' @param mods a model or list of models, containing breakpoints, used to bin expression data
 #' @param ci the cluster label and index into list of models
-#' @param dtype data type, continuous or binary
-#' @param mtype model type, binned or pairs
 #' @return Xbin, the binned, subset, and binarized values.
 #' @examples
 #' mod1 <- dataProc(X, mods)
 #'
-dataProc <- function(X, mods=NULL, ci=NA, dtype = 'continuous', mtype = 'pairs') {
+dataProc <- function(X, mods=NULL, ci=NA) {
 
+  # working with matrices
   Xmat <- as.matrix(X)
 
   if (length(mods) > 3) {
-    breakVec <- mods[[ci]]$breakVec
-    genes    <- mods[[ci]]$genes
-  } else {
-    breakVec <- mods$breakVec
-    genes    <- mods$genes
+    mods <- mods[[ci]]
   }
 
-  if (dtype == 'continuous' & mtype == 'binned') {
-      # here we have continuous expression values and we're doing the binned model
-      # so we need to bin the data
-      Xscl <- scale(Xmat) # scale each sample, in columns
-      Xbin <- apply(Xscl, 2, breakBin, breakVec)
-      rownames(Xbin) <- rownames(X)
-      idx <-  match(table = rownames(X), x = genes)
-      Xbin <- t(Xbin[idx,])
-      colnames(Xbin) <- genes
-  } else if (dtype == 'continuous' & mtype == 'pairs') {
-      # here we have expression data, and we're using the pairs model
-      # so we need to make pairs features.
-      Xbin <- createPairsFeatures(X, genes)
-  } else if (dtype == 'binary') {
-    # here we already have pairs features.
-    idx <-  match(table = rownames(X), x = genes)
-    Xbin <- t(X[idx,])
-    colnames(Xbin) <- genes
-  } else {
-    print('Error: dataProc()')
-    Xbin <- NA
-  }
+  # get out the relevant items
+  breakVec <- mods$breakVec
+  genes    <- mods$bst$feature_names
+  singleGenes <- genes[!str_detect(genes, ':')]
+  pairedGenes <- genes[str_detect(genes, ':')]
 
+  # bin the expression data
+  Xbinned <- apply(Xmat, 2, breakBin, breakVec)
+  rownames(Xbinned) <- rownames(Xmat)
+
+  # and subset the genes to those not in pairs
+  Xbinned <- Xbinned[singleGenes,]
+
+  # here we have expression data, and we're using the pairs model
+  # so we need to make pairs features.
+  Xpairs <- createPairsFeatures(Xmat, pairedGenes)
+  colnames(Xpairs) <- colnames(Xmat)
+
+  # join the data types and transpose
+  Xbin <- t(rbind(Xbinned, Xpairs))
   return(Xbin)
+}
+
+
+
+#' trainDataProc
+#' Data preprocessing
+#' @export
+#' @param Xmat Matrix of gene expression, samples in columns, genes in rows
+#' @param Yvec Vector of phenotype, strings, 1, 2, etc
+#' @param testRes List of previously calculated test results, from testFun(.)
+#' @param subtype cluster name, string '1', as in Yvec
+#' @param ptail Binary phenotype vector.
+#' @param breakVec vector of break points, used to bin expression data
+#' @return List of Xbin and Ybin, the binned, subset, and binarized values.
+#' @examples
+#' mod1 <- trainDataProc(Xmat, Yvec, ptail, cluster, breakVec==c(0, 0.25, 0.5, 0.75, 0.85, 1.0))
+#'
+trainDataProc <- function(Xmat, Yvec, subtype=1, ptail=0.01, breakVec=c(0, 0.25, 0.5, 0.75, 1.0)) {
+
+  # Create the binary subtype identifier
+  Ybin <- ifelse(Yvec == subtype, yes = 1, no=0)
+
+  # bin the expression data
+  Xbinned <- apply(Xmat, 2, breakBin, breakVec) # bin each column
+  rownames(Xbinned) <- rownames(Xmat)
+
+  # rank the data, and use it for feature selection
+  Xrank <- apply(Xmat, 2, rank)
+  testRes <- sapply(1:nrow(Xrank), function(gi) testFun(as.numeric(Xrank[gi,]), Ybin))  # get genes with big rank diffs.
+
+  # subset the expression data for pairs
+  Xfeat <- featureSelection(Xmat, Ybin, testRes, ptail)  # subset genes
+  Xpairs <- makeGenePairs(Xfeat$Genes, Xfeat$Xsub)
+
+  # subset the binned genes
+  Xbinned <- Xbinned[Xfeat$Genes,]
+
+  # join the data types and transpose
+  Xbin <- t(rbind(Xbinned, Xpairs))
+  genes <- colnames(Xbin)
+
+  return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
 }
 

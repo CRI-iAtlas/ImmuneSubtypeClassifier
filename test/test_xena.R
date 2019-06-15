@@ -69,11 +69,11 @@ devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force = T)
 reload(pkgload::inst('ImmuneSubtypeClassifier'))
 library(ImmuneSubtypeClassifier)
 
-load('xena_test_data.rda')
+load('~/xena_test_data.rda')
 
-kcalls <- callEnsemble(kirc2, path='~/Work/iAtlas/Subtypes/Subtype-Classifier/pairs_ens_model.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
+kcalls <- callEnsemble(kirc2, path = '~/ens.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
 
-zcalls <- callEnsemble(z2, path='~/Work/iAtlas/Subtypes/Subtype-Classifier/pairs_ens_model.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
+zcalls <- callEnsemble(z2, path = '~/ens.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
 
 table(Z=zcalls$BestCall, Kirc2=kcalls$BestCall)
 
@@ -81,35 +81,34 @@ table(T=rep2$ClusterModel1, Kirc2=kcalls$BestCall)
 
 table(T=rep2$ClusterModel1, EBpp=zcalls$BestCall)
 
+> table(Z=zcalls$BestCall, Kirc2=kcalls$BestCall)
 Kirc2
-Z   1   2   3   4
-1   1   0   0   4
-2   0  12   0   0
-3   0  86 368  17
-4   0   2   0  16
-5   0   0   0   2
-6   0   4   1   0
-
-table(rep2$ClusterModel1, Kirc2=calls$BestCall)
+Z   1   2   3   4   5
+1   3   0   0   3   0
+2   0  11   0   0   0
+3   2  32 435  16   1
+4   0   4   0   6   0
+>
+  > table(T=rep2$ClusterModel1, Kirc2=kcalls$BestCall)
 Kirc2
-    1   2   3   4
-1   1   2   0   4
-2   0  17   2   0
-3   0  70 361  13
-4   0   6   2  19
-5   0   0   0   3
-6   0   9   4   0
-
-
-> table(rep2$ClusterModel1, Z=zcalls$BestCall)
-Z
-    1   2   3   4   5   6
-1   5   1   1   0   0   0
-2   0   9  10   0   0   0
-3   0   1 443   0   0   0
-4   0   1   8  18   0   0
-5   0   0   1   0   2   0
-6   0   0   8   0   0   5
+T     1   2   3   4   5
+1   3   2   1   1   0
+2   1   8   9   1   0
+3   0  27 402  15   0
+4   1   4  17   5   0
+5   0   0   2   0   1
+6   0   6   4   3   0
+>
+  > table(T=rep2$ClusterModel1, EBpp=zcalls$BestCall)
+EBpp
+T     1   2   3   4
+1   3   1   2   1
+2   0   6  11   2
+3   1   1 441   1
+4   2   3  19   3
+5   0   0   3   0
+6   0   0  10   3
+>
 
 missed <- which(calls$BestCall == 2 & rep2$ClusterModel1 == 2)
 
