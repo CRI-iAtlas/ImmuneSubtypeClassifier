@@ -5,15 +5,15 @@
 \title{trainDataProc
 Data preprocessing}
 \usage{
-trainDataProc(Xmat, Yvec, cluster = 1, dtype = "continuous",
-  ptail = 0.05, breakVec = c(0, 0.25, 0.5, 0.75, 1), mtype = "pairs")
+trainDataProc(Xmat, Yvec, subtype = 1, ptail = 0.01, breakVec = c(0,
+  0.25, 0.5, 0.75, 1))
 }
 \arguments{
 \item{Xmat}{Matrix of gene expression, samples in columns, genes in rows}
 
 \item{Yvec}{Vector of phenotype, strings, 1, 2, etc}
 
-\item{cluster}{cluster name, string '1', as in Yvec}
+\item{subtype}{cluster name, string '1', as in Yvec}
 
 \item{ptail}{Binary phenotype vector.}
 

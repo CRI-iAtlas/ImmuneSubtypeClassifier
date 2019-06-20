@@ -7,7 +7,7 @@
 subtypePerf(calls, Ytest)
 }
 \arguments{
-\item{Ytest}{Multi-class phenotype vector.}
+\item{Ytest}{Multi-class vector of subtype labels.}
 
 \item{mods}{list of models fit to each subtype}
 }

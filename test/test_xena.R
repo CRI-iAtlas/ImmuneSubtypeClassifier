@@ -71,6 +71,7 @@ library(ImmuneSubtypeClassifier)
 
 load('~/xena_test_data.rda')
 
+
 kcalls <- callEnsemble(kirc2, path = '~/ens.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
 
 zcalls <- callEnsemble(z2, path = '~/ens.rda', geneids = 'symbol', dtype = 'continuous', mtype='pairs')
@@ -81,33 +82,36 @@ table(T=rep2$ClusterModel1, Kirc2=kcalls$BestCall)
 
 table(T=rep2$ClusterModel1, EBpp=zcalls$BestCall)
 
-> table(Z=zcalls$BestCall, Kirc2=kcalls$BestCall)
-Kirc2
-Z   1   2   3   4   5
-1   3   0   0   3   0
-2   0  11   0   0   0
-3   2  32 435  16   1
-4   0   4   0   6   0
->
-  > table(T=rep2$ClusterModel1, Kirc2=kcalls$BestCall)
-Kirc2
+table(Z=zcalls$BestCall, Kirc2=kcalls$BestCall)
+
+   Kirc2
+Z     1   2   3   4   5
+  1   3   0   0   3   0
+  2   0  11   0   0   0
+  3   3  29 436  19   1
+  4   0   4   0   4   0
+> 
+> table(T=rep2$ClusterModel1, Kirc2=kcalls$BestCall)
+   Kirc2
 T     1   2   3   4   5
-1   3   2   1   1   0
-2   1   8   9   1   0
-3   0  27 402  15   0
-4   1   4  17   5   0
-5   0   0   2   0   1
-6   0   6   4   3   0
->
-  > table(T=rep2$ClusterModel1, EBpp=zcalls$BestCall)
-EBpp
+  1   3   2   1   1   0
+  2   1   8   9   1   0
+  3   1  24 404  15   0
+  4   1   4  16   6   0
+  5   0   0   2   0   1
+  6   0   6   4   3   0
+> 
+> table(T=rep2$ClusterModel1, EBpp=zcalls$BestCall)
+   EBpp
 T     1   2   3   4
-1   3   1   2   1
-2   0   6  11   2
-3   1   1 441   1
-4   2   3  19   3
-5   0   0   3   0
-6   0   0  10   3
+  1   3   1   2   1
+  2   0   6  11   2
+  3   1   1 442   0
+  4   2   3  20   2
+  5   0   0   3   0
+  6   0   0  10   3
+> 
+
 >
 
 missed <- which(calls$BestCall == 2 & rep2$ClusterModel1 == 2)

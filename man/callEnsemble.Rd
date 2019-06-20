@@ -5,8 +5,7 @@
 \title{callEnsemble
 Make subtype calls for each sample}
 \usage{
-callEnsemble(X, cores = 2, path = "data", geneids = "symbol",
-  dtype = "continuous", mtype = "pairs")
+callEnsemble(X, path = "data", geneids = "symbol")
 }
 \arguments{
 \item{X}{gene expression matrix, genes in row.names, samples in column.names}

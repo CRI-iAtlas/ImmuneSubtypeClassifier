@@ -51,7 +51,7 @@ modelPerf2 <- function(calls, Ytest, subtype=NA) {
 #' Checking model performance.
 #' @export
 #' @param mods list of models fit to each subtype
-#' @param Ytest Multi-class phenotype vector.
+#' @param Ytest Multi-class vector of subtype labels.
 #' @return list of lists of err, the error in prediction, and a rocPlot
 #' @examples
 #' mod1 <- fitAllModels(ebppGeneExpr, phenotype)
