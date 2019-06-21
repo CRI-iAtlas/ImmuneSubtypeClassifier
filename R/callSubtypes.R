@@ -19,7 +19,7 @@ geneMatch <- function(X, geneid='pairs') {
   } else if (geneid == 'ensembl') {
     ensemble <- str_split(rownames(X), pattern = '\\.')
     ensemble <- unlist(lapply(ensemble, function(a) a[1]))
-    idx <- match(table = rownames(X), x = ebpp_genes$Ensembl)
+    idx <- match(table = ensemble, x = ebpp_genes$Ensembl)
   } else if (geneid == 'pairs') {
     return(X)
   } else {
