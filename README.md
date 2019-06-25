@@ -26,6 +26,7 @@ Xtest <- as.matrix(X) # has gene IDs in rownames and sample IDs in column names
 
 calls <- callEnsemble(ens, Xtest)
 ```
+Where gene IDs are Symbols, Entrez, or Ensemble IDs.
 
 The resulting 'calls' will have 'best calls' in the first column, and probabilities
 of belonging to each subtype after that.
