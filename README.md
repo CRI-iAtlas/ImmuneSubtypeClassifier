@@ -6,7 +6,7 @@ output:
 ---
 
 # ImmuneSubtypeClassifier #
-An R package for classification of immune subtypes, in cancer, using binned gene expression data.
+An R package for classification of immune subtypes, in cancer, using binned and binary gene-pairs expression data.
 
 ```{r}
 # Install devtools from CRAN
@@ -17,21 +17,20 @@ install.packages("devtools")
 devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier")
 
 library(ImmuneSubtypeClassifier)
-library(readr)
 ```
 
-To make calls on new data, with genes IDs in the first column and samples names after that.
+To make calls on new data, 
 
 ```{r}
-Xnew <- read_tsv('new_data.tsv')
+Xtest <- as.matrix(X) # has gene IDs in rownames and sample IDs in column names
 
 calls <- callEnsemble(ens, Xtest)
 ```
 
-The resulting 'calls' will have best calls in the first column, and probabilities
+The resulting 'calls' will have 'best calls' in the first column, and probabilities
 of belonging to each subtype after that.
 
-See how_the_model_was_fit.Rmd for details on how the model was fit.
+See inst/how_the_model_was_fit.Rmd and inst/algorithm_details.txt for more information.
 
-See scripts in the test directory for more detailed instructions on
+Also see scripts in the test directory for more detailed instructions on
 fitting one subtype model, a model per subtype and ensembles of models.

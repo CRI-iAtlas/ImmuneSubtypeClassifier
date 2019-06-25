@@ -16,6 +16,10 @@ geneMatch <- function(X, geneid='pairs') {
     idx <- match(table = rownames(X), x = ebpp_genes$Symbol)
   } else if (geneid == 'entrez') {
     idx <- match(table = rownames(X), x = ebpp_genes$Entrez)
+  } else if (geneid == 'ensembl') {
+    ensemble <- str_split(rownames(X), pattern = '\\.')
+    ensemble <- unlist(lapply(ensemble, function(a) a[1]))
+    idx <- match(table = ensemble, x = ebpp_genes$Ensembl)
   } else if (geneid == 'pairs') {
     return(X)
   } else {
@@ -29,25 +33,22 @@ geneMatch <- function(X, geneid='pairs') {
 }
 
 
-
-
 #' callOneSubtype
 #' Make subtype calls for one sample
 #' @export
 #' @param mods xgboost model list
 #' @param X gene expression matrix, genes in rows, samples in columns
 #' @param ci cluster label, and index into mods
-
 #' @return preds of one cluster model.
 #' @examples
 #' calli <- callOneSubtype(mods, X, 4)
 #'
-callOneSubtype <- function(mods, X, ci, dtype, mtype) {
+callOneSubtype <- function(mods, X, ci) {
 
   # Xbin needs to have the same columns as the training matrix...
   print(paste0('calling subtype ', ci))
   mi <- mods[[ci]]
-  Xbin <- dataProc(X, mods, ci, dtype)
+  Xbin <- dataProc(X, mods, ci)
   pred <- predict(mi$bst, Xbin)
   return(pred)
 }
@@ -58,15 +59,13 @@ callOneSubtype <- function(mods, X, ci, dtype, mtype) {
 #' @export
 #' @param mods xgboost model list
 #' @param X gene expression matrix, genes in rows, samples in columns
-#' @param cores num cores -- not used, but should be used.
-#' @param dtype data type
 #' @return table, column 1 is best call, remaining columns are subtype prediction scores.
 #' @examples
 #' calls <- callSubtypes(mods, X)
 #'
-callSubtypes <- function(mods, X, cores, dtype, mtype) {
+callSubtypes <- function(mods, X) {
 
-  pList <- lapply(1:6, function(mi) callOneSubtype(mods, X, mi, dtype, mtype))  # was lapply(names(mods), ... )
+  pList <- lapply(1:6, function(mi) callOneSubtype(mods, X, mi))
   pMat  <- do.call('cbind', pList)
   colnames(pMat) <- 1:6 # names(mods)
   bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
@@ -85,8 +84,7 @@ callSubtypes <- function(mods, X, cores, dtype, mtype) {
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(X, cores = 2, path='data',
-                         geneids='symbol', dtype='continuous', mtype='pairs') {
+callEnsemble <- function(X, path='data', geneids='symbol') {
 
   if (path == 'data') {
     data("ensemble_model")
@@ -94,11 +92,9 @@ callEnsemble <- function(X, cores = 2, path='data',
     load(path)
   }
 
-  if (mtype == 'binned') {
-    X <- geneMatch(X, geneids)    
-  }
+  X <- geneMatch(X, geneids)
 
-  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X, cores=2, dtype=dtype, mtype=mtype))
+  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
   eRes <- Reduce('+', eList) / length(eList)
   eRes <- eRes[,-1] # remove best calls
   colnames(eRes) <- 1:6 # names(mods)

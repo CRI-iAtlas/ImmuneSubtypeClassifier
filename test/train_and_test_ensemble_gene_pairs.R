@@ -101,12 +101,16 @@ smat1$dat$Xbin[1:5,1:5]
 smat2[1:5,1:5]
 
 # calling subtypes on the test set
-calls <- callEnsemble(ens, Xtest, path = '~/ens.rda')
+calls <- callEnsemble(Xtest, path = '~/ens.rda')
 
 # model performance plots
 perfs <- subtypePerf(calls, Ytest)
 
+table(calls$BestCall, Ytest)
 
 library(gridExtra)
 x <- grid.arrange(perfs[[1]]$plot,perfs[[2]]$plot,perfs[[3]]$plot,perfs[[4]]$plot,perfs[[5]]$plot,perfs[[6]]$plot, ncol=6, nrow=1 )
 ggsave(x, file='roc_plot.png')
+
+plot(x)
+

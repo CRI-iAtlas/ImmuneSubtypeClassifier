@@ -10,7 +10,7 @@ createPairsFeatures(X, genes)
 \arguments{
 \item{X}{One gene expression matrix}
 
-\item{genePairs}{a vector of gene pairs from the ensemble list}
+\item{genePairs}{a vector of gene pairs}
 }
 \value{
 xbin, binned expression profile

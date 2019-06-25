@@ -5,16 +5,12 @@
 \title{callSubtypes
 Make subtype calls for each sample}
 \usage{
-callSubtypes(mods, X, cores, dtype, mtype)
+callSubtypes(mods, X)
 }
 \arguments{
 \item{mods}{xgboost model list}
 
 \item{X}{gene expression matrix, genes in rows, samples in columns}
-
-\item{cores}{num cores -- not used, but should be used.}
-
-\item{dtype}{data type}
 }
 \value{
 table, column 1 is best call, remaining columns are subtype prediction scores.
