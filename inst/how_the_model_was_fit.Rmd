@@ -1,0 +1,57 @@
+How the model was fit.
+
+```{r}
+library(devtools)
+devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier")
+
+library(ImmuneSubtypeClassifier)
+library(readr)
+```
+
+First we read in the PanCancer expression matrix,
+'EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv'.
+
+```{r}
+download_file(src='http://api.gdc.cancer.gov/data/3586c0da-64d0-4b74-a449-5ff4d9136611', dest='~/ebpp.tsv')
+ebpp <- read_tsv('~/ebpp.tsv')
+```
+
+Then we get the reported TCGA immune subtypes.
+
+```{r}
+reportedScores <- read_tsv('data/five_signature_mclust_ensemble_results.tsv.gz') # in the package data dir
+reportedScores <- as.data.frame(reportedScores)
+rownames(reportedScores) <- str_replace_all(reportedScores$AliquotBarcode, pattern = '\\.', replacement = '-')
+```
+
+A little processing on the EB++ gene identifiers
+
+```{r}
+geneList <- str_split(ebpp$gene_id, pattern='\\|')
+geneSymbols <- unlist( lapply(geneList, function(a) a[2]) )
+```
+
+To get the matrix and phenotypes in the same order:
+
+```{r}
+X <- ebpp[, rownames(reportedScores)]
+rownames(X) <- geneSymbols
+Xmat <- as.matrix(X)
+Y <- reportedScores[,"ClusterModel1"]
+```
+
+At this point you can do feature subsetting, or provide all features
+and a rank sum test will reduce the total number.
+
+To fit the ensemble model (list of subtype models):
+
+```{r}
+xbgParams <- list(max_depth = 5, eta = 0.3, nrounds = 150, nthread = 5, nfold=5, subsample=0.85)
+ens <- fitEnsembleModel(Xmat, Y, n=10, sampSize=0.7, breakVec=c(0, 0.25, 0.5, 0.75, 1.0), params=xbgParams)
+    ```
+
+See scripts in the test directory for more detailed instructions on
+fitting one subtype model, a model per subtype, or ensembles of models.
+
+Additional fitted models are found in Inst/models
+
