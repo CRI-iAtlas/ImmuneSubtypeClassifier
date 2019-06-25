@@ -1,0 +1,70 @@
+
+Algorithm Details.
+
+Input Data 
+The primary input data should be a matrix, with genes in rows and
+sample IDs in columns.  Gene IDs should be set to rownames of the matrix, and
+these can be HGNC symbols, entrez, or ensembl IDs, which will be mapped to the
+same Symbol-Entrez pair that was used in the EB++ PanCancer Expression matrix.
+
+Fitting Ensemble Models 
+To fit the ensemble model, fitEnsembleModel(X-matrix,
+Y-subtypes) is called (found in fitModels.R), where we have the matrix of gene
+expression and a vector (Y) of class labels. Here the subtypes (1-6).  This
+function sub-samples a proportion of tumor samples, and then for each subtype
+(1-6) fits a binary classification model using XGBoost.
+
+Data Processing 
+For each single subtype model (part of a set of subtype models
+for C1-C6), the function trainDataProc(.) is called (found in dataProc.R) to
+prepare the input data for traning XGboost models. This includes a number of
+steps starting with binarizing the Y vector (in-subtype=1, not-in-subtype=0).
+Next, we bin the expression values, independently for each sample, using the
+break points found in the breakVec parameter. Then the gene expression values
+are ranked for each sample, and a rank sum test statistic is calculated for each
+gene using the ranks across samples, using the testFun(.) function, comparing
+the in-subtype and not-in-subtype groups. These statistics on each gene are used
+to reduce the feature space, the ptail parameter takes the upper and lower
+'ptail' percentage of features.  So if we had 10,000 features (genes) and we set
+ptail to 0.001, the model would be fit using the the 10 max and 10 min features
+by statistic score. At this point, with the reduced feature space, we have binned
+values and gene-pair features. The gene-pair features are calculated as by 
+iterating through our reduced set of genes, taking a gene as our 'pivot' gene,  
+at calculating features as (x <= pivot values).  So if a gene, within sample,
+is higher than the pivot gene, it's given a '1' value, and '0' otherwise.
+This is following the Top Scoring Pairs method. Then we have a training set
+comprised of binned values and paired binary values.
+
+Fitting One Subtype
+After processing the data, cvFitOneModel(.) is called, passing in the binary
+subtype labels, and cross-validation is used to determine the number of trees
+to grow. When the test set (within CV) does not improve, the number of trees is
+set, and the final model is fit.
+
+Examining the Model
+Within the modelPerf.R file, the function importantFeatures(.)  takes an ensemble 
+model, and builds a table of important features, along with several metrics
+like "Gain". Gene-pair features are coded as 'Symbol1:Symbol2'. ROC plots can be 
+produced using the subtypePerf(.) function.
+
+Calling Subtypes on New Data
+To call subtypes on a new data set, we use the callEnsemble(.) function found in
+the callSubtypes.R file. It is assumed the data will be a matrix with gene IDs
+in rownames, and sample IDs in column names. Each subtype within the  set making
+up the ensemble is called separately. First, the incoming data is  processed in
+order to match the gene-features used in training the model. This is done by
+calling geneMatch(.) which takes the incoming matrix and matches the gene-format
+used to train the model (the exact genes in EB++  or subset of EB++). Missing
+genes are left as NAs. With this initial data, callSubtypes(.) is called, which
+in turn, for each subtype 1-6, calls the callOneSubtype(.) function. Here the
+data is processed by dataProc(.), found in the dataProc.R file, where the genes
+are binned and gene-pairs calculated. When calculating the gene-pair features,
+if one of the genes is missing, the feature becomes a random binary value.  The
+feature creating depends on  having the same starting set that was used in
+training. The features are subset using the feature names from the XGboost
+model. With formatted data, the predict(.) function is called with the trained
+subtype model, and the prediction, a  probability (0.0-0.1) is returned.  Across
+subtypes and samples, each member of the ensemble returns a matrix of Samples by
+Subtype probabiliies. The probabilities  are averaged across the ensemble, and
+the highest score is called as the 'BestCall'.
+
