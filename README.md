@@ -6,7 +6,7 @@ output:
 ---
 
 # ImmuneSubtypeClassifier #
-An R package for classification of immune subtypes, in cancer, using binned and binary gene-pairs expression data.
+This is an R package for classification of PanCancer immune subtypes. Five gene signatures were used in the initial clustering of tumor samples as part of the Immune Landscape of Cancer manuscript, providing 485 genes that were used to create quartile and binary-valued gene-pair features. With these features, an ensemble of XGBoost classifiers was trained to predict subtype membership, where each member of the ensemble was trained on 70% of 9,129 samples.
 
 ```{r}
 library(devtools)
@@ -31,13 +31,30 @@ calls <- callEnsemble(X=Xtest, geneids='symbol')
 ```
 Where gene IDs are 'symbol', 'entrez', or 'ensembl' .
 
+To make plots of how the models are doing:
+```{r}
+perfs <- subtypePerf(calls, Ytest)
+
+table(calls$BestCall, Ytest)
+
+library(gridExtra)
+x <- grid.arrange(perfs[[1]]$plot,perfs[[2]]$plot,perfs[[3]]$plot,
+                  perfs[[4]]$plot,perfs[[5]]$plot,perfs[[6]]$plot, ncol=6, nrow=1 )
+ggsave(x, file='roc_plot.png')
+```
+Where Ytest is a vector of known subtype labels (for TCGA cases).
+
 The resulting 'calls' will have 'best calls' in the first column, and probabilities
 of belonging to each subtype after that.
 
-See inst/how_the_model_was_fit.Rmd and inst/algorithm_details.txt for more information.
+* inst/how_the_model_was_fit.Rmd and inst/algorithm_details.txt 
+Have information on how the model was built.
 
-See inst/important_genes_signature_model.tsv  
-for a list of the important features in each subtype/ensemble member.
+* inst/data/five_signature_mclust_ensemble_results.tsv.gz
+Contains TCGA subtype membership from the manuscript, suggest using column 'ClusterModel1'.
+
+* inst/important_genes_signature_model.tsv  
+A list of the important features in each subtype/ensemble member.
 
 Also see scripts in the test directory for more detailed instructions on
 fitting one subtype model, a model per subtype and ensembles of models.
