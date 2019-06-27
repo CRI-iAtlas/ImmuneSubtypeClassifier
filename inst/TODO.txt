@@ -2,10 +2,6 @@
 TODO
 ----
 
--1.  What should be done with NAs in the incoming data? 0s?
-     I have made the missing genes be random 0,1 draws, as not
-     to give any additional information one way or another, but
-     will make the classifier happy, since that feature is present.
 
 0. Parameters to optimize:
    -- reducing number of needed genes to minimum
@@ -14,17 +10,5 @@ TODO
    -- ensemble size (want it not too big) for speed of calling
    -- ptail -- the proportion of genes to select
    -- allow overlapping genes across subtype models? or hard partitions?
-   -- included genes ... just use immune genes?
 
-X-done. Allow for missing genes.
-   -- fill in matrix with empty values for missing genes.
-   -- think model expects a column named g_i
-
-
-6. XX take informative genes from binned expression model
-   XX take genes from immune signatures used for orig. immune subtyping
-   XX use informative genes as centers to generate top-scoring-pairs style features
-      i.e.  For a given sample, in subtype 2, gene_i is informative, then the signature genes are binned to 0,1 based on
-            whether they're higher or lower in expression compared to the center gene. This includes the other informative
-            genes as well.
 

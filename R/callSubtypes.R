@@ -13,13 +13,13 @@ geneMatch <- function(X, geneid='pairs') {
   data('ebpp_gene')
 
   if (geneid == 'symbol') {
-    idx <- match(table = rownames(X), x = ebpp_genes$Symbol)
+    idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)
   } else if (geneid == 'entrez') {
-    idx <- match(table = rownames(X), x = ebpp_genes$Entrez)
+    idx <- match(table = rownames(X), x = ebpp_genes_sig$Entrez)
   } else if (geneid == 'ensembl') {
     ensemble <- str_split(rownames(X), pattern = '\\.')
     ensemble <- unlist(lapply(ensemble, function(a) a[1]))
-    idx <- match(table = ensemble, x = ebpp_genes$Ensembl)
+    idx <- match(table = ensemble, x = ebpp_genes_sig$Ensembl)
   } else if (geneid == 'pairs') {
     return(X)
   } else {
@@ -28,7 +28,7 @@ geneMatch <- function(X, geneid='pairs') {
   }
 
   X2 <- X[idx,]  ### Adds NA rows in missing genes
-  rownames(X2) <- ebpp_genes$Symbol
+  rownames(X2) <- ebpp_genes_sig$Symbol
   return(X2)
 }
 
