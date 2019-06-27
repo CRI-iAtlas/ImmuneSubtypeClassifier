@@ -23,7 +23,7 @@ geneMatch <- function(X, geneid='pairs') {
   } else if (geneid == 'pairs') {
     return(X)
   } else {
-    print("Please use gene symbols or entrez")
+    print("For geneids, please use:  symbol, entrez, ensembl")
     return(NA)
   }
 
