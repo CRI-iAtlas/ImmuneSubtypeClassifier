@@ -57,16 +57,21 @@ binaryGene <- function(pivotvalue, values) {
 
 
 makeGenePairs <- function(genes, Xsub) {
-
-  # for each gene
+  # collect results here
   resList <- list()
-  for (gi in genes) {
-    # do pairs
-    gval <- as.numeric(Xsub[gi,])
-    res0 <- lapply(1:ncol(Xsub), function(i) binaryGene(gval[i], Xsub[,i]))
+  # all pairs of genes here
+  all.combos <- t(combn(genes,2))
+
+  for (i in 1:nrow(all.combos)) {
+    gi <- all.combos[i,1]  # the pivot gene
+    gval <- as.numeric(Xsub[gi,]) # and it's value
+    # get the paired genes out.
+    gcom <- all.combos[all.combos[,1] == gi,2]
+    # pick sample j, get pivot value j which is for gene i, and pivot all the paired genes
+    res0 <- lapply(1:ncol(Xsub), function(j) binaryGene(gval[j], Xsub[gcom,j]))
     # make matrix of features.
     resMat <- do.call('cbind', res0)
-    rownames(resMat) <- sapply(genes, function(gj) paste0(gi,':',gj))
+    rownames(resMat) <- sapply(gcom, function(gj) paste0(gi,':',gj))
     resList[[gi]] <- resMat
   }
   Xbin <- do.call('rbind', resList)

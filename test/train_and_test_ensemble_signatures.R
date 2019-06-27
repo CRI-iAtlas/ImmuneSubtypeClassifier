@@ -21,6 +21,8 @@ params=list(max_depth = 5, eta = 0.3, nrounds = 100, nthread = 5, nfold=5)
 # list of models
 ens <- fitEnsembleModel(Xmat, Y, n=10, sampSize=0.7, ptail=0.05, params=params, breakVec=breakVec)
 
+save(ens, file='~/ensemble_model.rda')
+
 # calling subtypes on the test set
 calls <- callEnsemble(ens, Xmat)
 
