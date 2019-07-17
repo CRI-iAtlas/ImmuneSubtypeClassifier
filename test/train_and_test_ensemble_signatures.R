@@ -7,7 +7,7 @@ library(readr)
 # using the package
 
 #devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force = T)
-devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", branch = "dual")
+devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier")
 
 reload(pkgload::inst('ImmuneSubtypeClassifier'))
 library(ImmuneSubtypeClassifier)

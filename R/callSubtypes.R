@@ -10,7 +10,7 @@
 #'
 geneMatch <- function(X, geneid='pairs') {
 
-  data('ebpp_gene')
+  data(ebpp_gene)
 
   if (geneid == 'symbol') {
     idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)
@@ -70,7 +70,7 @@ callSubtypes <- function(mods, X) {
   colnames(pMat) <- 1:6 # names(mods)
   bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
 
-  return(cbind(data.frame(BestCall=bestCall), pMat, stringsAsFactors=F))
+  return(cbind(data.frame(SampleID=colnames(X), BestCall=bestCall), pMat, stringsAsFactors=F))
 }
 
 
