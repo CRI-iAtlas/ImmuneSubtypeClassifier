@@ -95,11 +95,17 @@ callEnsemble <- function(X, path='data', geneids='symbol') {
   X <- geneMatch(X, geneids)
 
   eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
+  #eList <- mclapply(X=ens, FUN=function(ei) callSubtypes(mods=ei, X=Xmat), mc.cores=5)
   ePart <- lapply(eList, function(a) a[,3:8])
-  eRes <- Reduce('+', ePart) / length(ePart)
-  colnames(eRes) <- 1:6 # names(mods)
-  bestCall <- apply(eRes, 1, function(pi) colnames(eRes)[which(pi == max(pi)[1])])
+  eStack <- array( unlist(ePart) , c(nrow(X),6,10) )
+  eMeds  <- apply( eStack , 1:2 , median )
+  colnames(eMeds) <- 1:6 # names(mods)
+
+  ################ PUT PREDICTOR HERE ####################3
+  bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
+  #########################################################
+
   sampleIDs <- eList[[1]][,1]
 
-  return(data.frame(SampleIDs=sampleIDs, BestCall=bestCall, eRes))
+  return(data.frame(SampleIDs=sampleIDs, BestCall=bestCall, eMeds))
 }
