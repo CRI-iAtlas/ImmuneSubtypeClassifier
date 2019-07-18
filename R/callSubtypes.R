@@ -98,6 +98,7 @@ callEnsemble <- function(X, path='data', geneids='symbol') {
   ePart <- lapply(eList, function(a) a[,3:8])
   eStack <- array( unlist(ePart) , c(ncol(X),6,10) )
   eMeds  <- apply( eStack , 1:2 , median )
+  eMeds <- as.data.frame(eMeds)
   colnames(eMeds) <- 1:6 # names(mods)
 
   ################ PUT PREDICTOR HERE ####################3
