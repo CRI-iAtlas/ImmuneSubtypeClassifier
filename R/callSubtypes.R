@@ -70,7 +70,7 @@ callSubtypes <- function(mods, X) {
   colnames(pMat) <- 1:6 # names(mods)
   bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
 
-  return(cbind(data.frame(SampleID=colnames(X), BestCall=bestCall), pMat, stringsAsFactors=F))
+  return(data.frame(SampleID=colnames(X), BestCall=bestCall, pMat, stringsAsFactors=F))
 }
 
 
