@@ -107,5 +107,7 @@ callEnsemble <- function(X, path='data', geneids='symbol') {
 
   sampleIDs <- eList[[1]][,1]
 
-  return(data.frame(SampleIDs=sampleIDs, BestCall=bestCall, eMeds))
+  res0 <- data.frame(SampleIDs=sampleIDs, BestCall=bestCall, eMeds) 
+  colnames(res0)[3:8] <- 1:6
+  return(res0)
 }
