@@ -95,10 +95,11 @@ callEnsemble <- function(X, path='data', geneids='symbol') {
   X <- geneMatch(X, geneids)
 
   eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
-  eRes <- Reduce('+', eList) / length(eList)
-  eRes <- eRes[,-1] # remove best calls
+  ePart <- lapply(eList, function(a) a[,3:8])
+  eRes <- Reduce('+', ePart) / length(ePart)
   colnames(eRes) <- 1:6 # names(mods)
   bestCall <- apply(eRes, 1, function(pi) colnames(eRes)[which(pi == max(pi)[1])])
+  sampleIDs <- eList[[1]][,1]
 
-  return(cbind(data.frame(BestCall=bestCall), eRes))
+  return(data.frame(SampleIDs=sampleIDs, BestCall=bestCall, eRes))
 }
