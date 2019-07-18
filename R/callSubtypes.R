@@ -95,9 +95,8 @@ callEnsemble <- function(X, path='data', geneids='symbol') {
   X <- geneMatch(X, geneids)
 
   eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
-  #eList <- mclapply(X=ens, FUN=function(ei) callSubtypes(mods=ei, X=Xmat), mc.cores=5)
   ePart <- lapply(eList, function(a) a[,3:8])
-  eStack <- array( unlist(ePart) , c(nrow(X),6,10) )
+  eStack <- array( unlist(ePart) , c(ncol(X),6,10) )
   eMeds  <- apply( eStack , 1:2 , median )
   colnames(eMeds) <- 1:6 # names(mods)
 
