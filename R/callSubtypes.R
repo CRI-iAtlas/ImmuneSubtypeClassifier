@@ -102,12 +102,15 @@ callEnsemble <- function(X, path='data', geneids='symbol') {
   colnames(eMeds) <- 1:6 # names(mods)
 
   ################ PUT PREDICTOR HERE ####################3
-  bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
+  data('subtype_caller_model')
+  #bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
+  predCall <- predict(scaller, eMeds)
+
   #########################################################
 
   sampleIDs <- eList[[1]][,1]
 
-  res0 <- data.frame(SampleIDs=sampleIDs, BestCall=bestCall, eMeds) 
+  res0 <- data.frame(SampleIDs=sampleIDs, BestCall=bestCall, eMeds)
   colnames(res0)[3:8] <- 1:6
   return(res0)
 }
