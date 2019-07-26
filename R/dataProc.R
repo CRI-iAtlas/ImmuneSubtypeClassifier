@@ -184,6 +184,7 @@ dataProc <- function(X, mods=NULL, ci=NA) {
   breakVec <- mods$breakVec
   genes    <- mods$bst$feature_names
   singleGenes <- genes[!str_detect(genes, ':')]
+  singleGenes <- singleGenes[!singleGenes %in% c("s1s2","s1s3","s1s4","s1s5","s2s3","s2s4","s2s5","s3s4","s3s5","s4s5")]
   pairedGenes <- genes[str_detect(genes, ':')]
 
   # bin the expression data
@@ -198,8 +199,11 @@ dataProc <- function(X, mods=NULL, ci=NA) {
   Xpairs <- createPairsFeatures(Xmat, pairedGenes)
   colnames(Xpairs) <- colnames(Xmat)
 
+  # gene set features.
+  Xset <- makeSetData(Xmat)
+
   # join the data types and transpose
-  Xbin <- t(rbind(Xbinned, Xpairs))
+  Xbin <- t(rbind(Xbinned, Xpairs, Xset))
   return(Xbin)
 }
 
