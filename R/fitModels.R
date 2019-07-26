@@ -95,7 +95,7 @@ fitSubtypeModel <- function(Xs, Ys, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
 #' fitEnsembleModel
 #' Train a single subtype model using cross validation
 #' @export
-#' @param Xs Gene expression matrix.
+#' @param Xs Gene expression matrix, samples in columns, genes in rows
 #' @param Ys Phenotype vector, multiclass
 #' @param n Size of the ensember, where each member is a result from fitSubtypeModel
 #' @param sampSize proportion of samples to hold back

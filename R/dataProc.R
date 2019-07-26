@@ -125,6 +125,42 @@ createPairsFeatures <- function(X, genes) {
 }
 
 
+makeSetData <- function(Xmat) {
+
+  data("geneSetSymbols")
+  resultList <- list()
+
+  featureNames <- c()
+  for (j1 in 1:4) {
+    for (j2 in (j1+1):5) {
+      featureNames <- c(featureNames, paste0('s',j1,'s',j2))
+    }
+  }
+
+  # for each sample
+  for (i in 1:ncol(Xmat)) {
+    res0 <- numeric(length=10)
+    idx <- 1
+    for (j1 in 1:4) {
+      for (j2 in (j1+1):5) {
+        set1 <- genesetsymbols[[j1]]
+        set2 <- genesetsymbols[[j2]]
+        vals1 <- Xmat[rownames(Xmat) %in% set1,i]
+        vals2 <- Xmat[rownames(Xmat) %in% set2,i]
+        res1 <- sapply(vals1, function(v1) sum(v1 > vals2, na.rm=T))
+        res0[idx] <- sum(res1, na.rm = T) / (length(vals1) * length(vals2))
+        idx <- idx+1
+      }
+    }
+    resultList[[i]] <- as.numeric(res0)
+  }
+  resMat <- do.call(cbind, resultList)
+  colnames(resMat) <- colnames(Xmat)
+  rownames(resMat) <- featureNames
+  return(resMat)
+}
+
+
 #' dataProc
 #' Data preprocessing
 #' @export
@@ -202,8 +238,11 @@ trainDataProc <- function(Xmat, Yvec, subtype=1, ptail=0.01, breakVec=c(0, 0.25,
   # subset the binned genes
   Xbinned <- Xbinned[Xfeat$Genes,]
 
+  # gene set features.
+  Xset <- makeSetData(Xmat)
+
   # join the data types and transpose
-  Xbin <- t(rbind(Xbinned, Xpairs))
+  Xbin <- t(rbind(Xbinned, Xpairs, Xset))
   genes <- colnames(Xbin)
 
   return(list(dat=list(Xbin=Xbin,Ybin=Ybin,Genes=genes), testRes=testRes, breakVec=breakVec))
