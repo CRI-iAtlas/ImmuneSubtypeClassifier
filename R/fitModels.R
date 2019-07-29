@@ -102,27 +102,40 @@ fitSubtypeModel <- function(Xs, Ys, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
 #' @param dtype the data type, either continuous values or binary values.
 #' @param breakvec the vector of break points if using continuous values
 #' @param params Parameters for xgboost
+#' @param numCores number of cores to use, one per ensemble member
 #' @return A list of lists of xgboost classifiers
 #' @examples
 #' mods <- fitEnsembleModel(Xs, Ys, n, sampSize, dtype, breakVec, params)
 #'
 fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.7, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
                             params=list(max_depth = 5, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
-                            ptail=0.01) {
+                            ptail=0.01, numCores=2) {
+
+  cl <- makeCluster(numCores)
+  clusterEvalQ(cl, {
+    library(ImmuneSubtypeClassifier)
+  })
+  clusterExport(cl, 'Xs')
+  clusterExport(cl, 'Ys')
+  clusterExport(cl, 'sampSize')
+  clusterExport(cl, 'breakVec')
+  clusterExport(cl, 'params')
+  clusterExport(cl, 'ptail')
 
   eList <- list()
-  for (i in 1:n) {
 
+  ens <- parLapply(cl=cl, X=1:n, fun=function(ei)
     try(expr={
       # sample our training and testing groups
       jdx <- sample(1:ncol(Xs), size = sampSize * ncol(Xs), replace=F)
       Xs2 <- Xs[,jdx]
       Ys2 <- Ys[jdx]
-      eList[[i]] <- fitSubtypeModel(Xs=Xs2, Ys=Ys2, breakVec=breakVec, params=params, ptail=ptail)
+      fitSubtypeModel(Xs=Xs2, Ys=Ys2, breakVec=breakVec, params=params, ptail=ptail)
+    })
+  )
 
-      })
-  }
+  stopCluster(cl)
 
-  return(eList)
+  return(ens)
 }
 

@@ -7,10 +7,10 @@ Train a single subtype model using cross validation}
 \usage{
 fitEnsembleModel(Xs, Ys, n = 5, sampSize = 0.7, breakVec = c(0, 0.25,
   0.5, 0.75, 1), params = list(max_depth = 5, eta = 0.5, nrounds = 100,
-  nthread = 5, nfold = 5), ptail = 0.01)
+  nthread = 5, nfold = 5), ptail = 0.01, numCores = 2)
 }
 \arguments{
-\item{Xs}{Gene expression matrix.}
+\item{Xs}{Gene expression matrix, samples in columns, genes in rows}
 
 \item{Ys}{Phenotype vector, multiclass}
 
@@ -19,6 +19,8 @@ fitEnsembleModel(Xs, Ys, n = 5, sampSize = 0.7, breakVec = c(0, 0.25,
 \item{sampSize}{proportion of samples to hold back}
 
 \item{params}{Parameters for xgboost}
+
+\item{numCores}{number of cores to use, one per ensemble member}
 
 \item{dtype}{the data type, either continuous values or binary values.}
 

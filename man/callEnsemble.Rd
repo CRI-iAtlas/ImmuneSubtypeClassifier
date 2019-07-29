@@ -5,7 +5,7 @@
 \title{callEnsemble
 Make subtype calls for each sample}
 \usage{
-callEnsemble(X, path = "data", geneids = "symbol")
+callEnsemble(X, path = "data", geneids = "symbol", numCores = 2)
 }
 \arguments{
 \item{X}{gene expression matrix, genes in row.names, samples in column.names}
@@ -13,6 +13,8 @@ callEnsemble(X, path = "data", geneids = "symbol")
 \item{path}{the path to the ensemble model, stored as RData, and named 'ens'}
 
 \item{geneids}{either hgnc for gene symbols or entrez ids. will be matched to the EB++ matrix}
+
+\item{numCores}{number of cores to use with parallel lib}
 }
 \value{
 table, column 1 is best call, remaining columns are subtype prediction scores.

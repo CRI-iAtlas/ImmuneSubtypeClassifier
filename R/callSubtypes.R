@@ -80,11 +80,12 @@ callSubtypes <- function(mods, X) {
 #' @param X gene expression matrix, genes in row.names, samples in column.names
 #' @param path the path to the ensemble model, stored as RData, and named 'ens'
 #' @param geneids either hgnc for gene symbols or entrez ids. will be matched to the EB++ matrix
+#' @param numCores number of cores to use with parallel lib
 #' @return table, column 1 is best call, remaining columns are subtype prediction scores.
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(X, path='data', geneids='symbol') {
+callEnsemble <- function(X, path='data', geneids='symbol', numCores=2) {
 
   if (path == 'data') {
     data("ensemble_model")
@@ -94,9 +95,19 @@ callEnsemble <- function(X, path='data', geneids='symbol') {
 
   X <- geneMatch(X, geneids)
 
-  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
+  cl <- makeCluster(numCores)
+  clusterEvalQ(cl, {
+    library(ImmuneSubtypeClassifier)
+  })
+  clusterExport(cl, 'Xtrain')
+  clusterExport(cl, 'ens')
+
+  #eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
+  eList <- parLapply(cl=cl, X=1:length(ens), fun=function(ei) callSubtypes(mods=ens[[ei]], X=X))
+  stopCluster(cl)
+
   ePart <- lapply(eList, function(a) a[,3:8])
-  eStack <- array( unlist(ePart) , c(ncol(X),6,10) )
+  eStack <- array( unlist(ePart) , c(ncol(X),6,len(ens)) )
   eMeds  <- apply( eStack , 1:2 , median )
   eMeds <- as.data.frame(eMeds)
   colnames(eMeds) <- 1:6 # names(mods)
@@ -104,13 +115,13 @@ callEnsemble <- function(X, path='data', geneids='symbol') {
   ################ PUT PREDICTOR HERE ####################3
   data('subtype_caller_model')
   #bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
-  predCall <- predict(scaller, eMeds)
+  predCall <- predict(scaller, as.matrix(eMeds)) + 1
 
   #########################################################
 
   sampleIDs <- eList[[1]][,1]
 
-  res0 <- data.frame(SampleIDs=sampleIDs, BestCall=bestCall, eMeds)
+  res0 <- data.frame(SampleIDs=sampleIDs, BestCall=predCall, eMeds)
   colnames(res0)[3:8] <- 1:6
   return(res0)
 }
