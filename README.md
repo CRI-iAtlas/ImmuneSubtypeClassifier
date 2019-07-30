@@ -27,7 +27,7 @@ To make calls on new data,
 ```{r}
 Xtest <- as.matrix(X) # has gene IDs in rownames and sample IDs in column names
 
-calls <- callEnsemble(X=Xtest, geneids='symbol')
+calls <- callEnsemble(X=Xtest, geneids='symbol', numCores=4)
 ```
 Where gene IDs are 'symbol', 'entrez', or 'ensembl' .
 
