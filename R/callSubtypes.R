@@ -96,6 +96,7 @@ callEnsemble <- function(X, path='data', geneids='symbol', numCores=2) {
   X <- geneMatch(X, geneids)
 
   cl <- makeForkCluster(numCores)
+
   clusterEvalQ(cl, {
     library(ImmuneSubtypeClassifier)
   })
@@ -106,7 +107,7 @@ callEnsemble <- function(X, path='data', geneids='symbol', numCores=2) {
   stopCluster(cl)
 
   ePart <- lapply(eList, function(a) a[,3:8])
-  eStack <- array( unlist(ePart) , c(ncol(X),6,len(ens)) )
+  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ens)) )
   eMeds  <- apply( eStack , 1:2 , median )
   eMeds <- as.data.frame(eMeds)
   colnames(eMeds) <- 1:6 # names(mods)
