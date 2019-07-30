@@ -95,15 +95,14 @@ callEnsemble <- function(X, path='data', geneids='symbol', numCores=2) {
 
   X <- geneMatch(X, geneids)
 
-  cl <- makeCluster(numCores)
+  cl <- makeForkCluster(numCores)
   clusterEvalQ(cl, {
     library(ImmuneSubtypeClassifier)
   })
-  clusterExport(cl, 'Xtrain')
-  clusterExport(cl, 'ens')
 
   #eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
   eList <- parLapply(cl=cl, X=1:length(ens), fun=function(ei) callSubtypes(mods=ens[[ei]], X=X))
+
   stopCluster(cl)
 
   ePart <- lapply(eList, function(a) a[,3:8])

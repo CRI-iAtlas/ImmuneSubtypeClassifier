@@ -91,6 +91,19 @@ fitSubtypeModel <- function(Xs, Ys, breakVec=c(0, 0.25, 0.5, 0.75, 1.0),
   return(modelList)
 }
 
+# runs in cluster nodes #
+
+fitFun <- function(i) {
+    modi <- c()
+    #try(expr={
+      # sample our training and testing groups
+      jdx <- sample(1:ncol(Xs), size = sampSize * ncol(Xs), replace=F)
+      Xs2 <- Xs[,jdx]
+      Ys2 <- Ys[jdx]
+      modi <- fitSubtypeModel(Xs=Xs2, Ys=Ys2, breakVec=breakVec, params=params, ptail=ptail)
+    #})
+    return(modi)    
+}
 
 #' fitEnsembleModel
 #' Train a single subtype model using cross validation
@@ -111,7 +124,8 @@ fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.7, breakVec=c(0, 0.25, 0.5,
                             params=list(max_depth = 5, eta = 0.5, nrounds = 100, nthread = 5, nfold=5),
                             ptail=0.01, numCores=2) {
 
-  cl <- makeCluster(numCores)
+  cl <- makeCluster(numCores,  outfile='')
+
   clusterEvalQ(cl, {
     library(ImmuneSubtypeClassifier)
   })
@@ -121,18 +135,9 @@ fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.7, breakVec=c(0, 0.25, 0.5,
   clusterExport(cl, 'breakVec')
   clusterExport(cl, 'params')
   clusterExport(cl, 'ptail')
+  clusterExport(cl, 'fitFun')
 
-  eList <- list()
-
-  ens <- parLapply(cl=cl, X=1:n, fun=function(ei)
-    try(expr={
-      # sample our training and testing groups
-      jdx <- sample(1:ncol(Xs), size = sampSize * ncol(Xs), replace=F)
-      Xs2 <- Xs[,jdx]
-      Ys2 <- Ys[jdx]
-      fitSubtypeModel(Xs=Xs2, Ys=Ys2, breakVec=breakVec, params=params, ptail=ptail)
-    })
-  )
+  ens <- parLapply(cl=cl, X=1:n, fun = fitFun)
 
   stopCluster(cl)
 
