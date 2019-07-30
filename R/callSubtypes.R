@@ -29,6 +29,7 @@ geneMatch <- function(X, geneid='pairs') {
 
   X2 <- X[idx,]  ### Adds NA rows in missing genes
   rownames(X2) <- ebpp_genes_sig$Symbol
+
   return(X2)
 }
 
