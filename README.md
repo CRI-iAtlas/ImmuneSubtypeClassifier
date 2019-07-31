@@ -38,19 +38,6 @@ Where gene IDs are 'symbol', 'entrez', or 'ensembl'.
 If you want to be safe, map your own gene IDs to symbols, 
 using your favorite method.
 
-To make plots of how the models are doing:
-```{r}
-perfs <- subtypePerf(calls, Ytest)
-
-table(calls$BestCall, Ytest)
-
-library(gridExtra)
-x <- grid.arrange(perfs[[1]]$plot,perfs[[2]]$plot,perfs[[3]]$plot,
-                  perfs[[4]]$plot,perfs[[5]]$plot,perfs[[6]]$plot, ncol=6, nrow=1 )
-ggsave(x, file='roc_plot.png')
-```
-Where Ytest is a vector of known subtype labels (for TCGA cases).
-
 The resulting 'calls' will have 'best calls' in the first column, and probabilities
 of belonging to each subtype after that.
 
