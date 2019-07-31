@@ -27,9 +27,16 @@ To make calls on new data,
 ```{r}
 Xtest <- as.matrix(X) # has gene IDs in rownames and sample IDs in column names
 
-calls <- callEnsemble(X=Xtest, geneids='symbol', numCores=4)
+calls <- callEnsemble(X=Xtest, geneids='symbol')
+
+# or in parallel #
+calls <- parCallEnsemble(X=Xtest, geneids='symbol', numCores=4)
+
 ```
-Where gene IDs are 'symbol', 'entrez', or 'ensembl' .
+Where gene IDs are 'symbol', 'entrez', or 'ensembl'.
+
+If you want to be safe, map your own gene IDs to symbols, 
+using your favorite method.
 
 To make plots of how the models are doing:
 ```{r}
