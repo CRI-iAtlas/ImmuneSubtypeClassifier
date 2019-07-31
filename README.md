@@ -17,7 +17,7 @@ library(ImmuneSubtypeClassifier)
 
 To get a list of the genes needed:
 ```{r}
-data(ebpp_genes)
+data(ebpp_gene)
 
 head(ebpp_genes_sig)  ### 485 genes are needed
 ```
