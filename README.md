@@ -29,7 +29,7 @@ Xtest <- as.matrix(X) # has gene IDs in rownames and sample IDs in column names
 
 calls <- callEnsemble(X=Xtest, geneids='symbol')
 
-# or in parallel #
+# or in parallel .. **Not working** #
 calls <- parCallEnsemble(X=Xtest, geneids='symbol', numCores=4)
 
 ```
