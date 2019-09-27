@@ -47,7 +47,7 @@ Have information on how the model was built.
 * inst/data/five_signature_mclust_ensemble_results.tsv.gz
 Contains TCGA subtype membership from the manuscript, suggest using column 'ClusterModel1'.
 
-* inst/important_genes_signature_model.tsv  
+* inst/important_features_in_the_ensemble_model.tsv  
 A list of the important features in each subtype/ensemble member.
 
 Also see scripts in the test directory for more detailed instructions on

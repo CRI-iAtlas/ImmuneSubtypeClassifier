@@ -72,7 +72,7 @@ scaller <- xgboost::xgb.cv(data = as.matrix(ecalls[,3:8]), label = (erep2-1),
 
 scaller <- xgboost::xgboost(data = as.matrix(ecalls[,3:8]),
                            label = (erep2-1),
-                           nrounds = 8,
+                           nrounds = 18,
                            params = list(objective='multi:softmax', num_class=6))
 
 
@@ -109,3 +109,14 @@ ftab1 <- table(NEW=fnew, REP=fy$ClusterModel1)
 diag(ftab1) / colSums(ftab1)
 
 
+
+scaller <- xgboost::xgb.cv(data = as.matrix(eMeds), label = (Ytrain-1),
+                           nfold = 5, nrounds = 250, early_stopping_rounds = 2,
+                            params = list(objective='multi:softmax', num_class=6))
+
+
+
+
+scaller <- xgboost::xgboost(data = as.matrix(eMeds), label = (Ytrain-1),
+                           nrounds = 8,
+                           params = list(objective='multi:softmax', num_class=6))
