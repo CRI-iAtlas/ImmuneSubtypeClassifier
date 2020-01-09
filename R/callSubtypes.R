@@ -8,29 +8,42 @@
 #' @examples
 #' Xprime <- geneMatch(X)
 #'
-geneMatch <- function(X, geneid='pairs') {
+geneMatch <- function(X, geneid='pairs') {  ## add datasource param  (RNAseq or io360)
 
   data(ebpp_gene)
 
   if (geneid == 'symbol') {
-    idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)
+    idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)  ### this is just for the EBPP genes ###
+
   } else if (geneid == 'entrez') {
     idx <- match(table = rownames(X), x = ebpp_genes_sig$Entrez)
+    
   } else if (geneid == 'ensembl') {
     ensemble <- str_split(rownames(X), pattern = '\\.')
     ensemble <- unlist(lapply(ensemble, function(a) a[1]))
     idx <- match(table = ensemble, x = ebpp_genes_sig$Ensembl)
+    
   } else if (geneid == 'pairs') {
     return(X)
+    
   } else {
     print("For geneids, please use:  symbol, entrez, ensembl")
     return(NA)
   }
 
+  # idx will be 485 elements long... non matched ebpp_sig_genes
+  # will show as NAs in the list.
+  
+  # SO... we calculate sum of NAs over size of ebpp_genes_sig
+
+  matchError <- sum(is.na(idx)) / nrow(ebpp_genes_sig)
+
+  # NAs in idx will enter NA rows in X2 
+  
   X2 <- X[idx,]  ### Adds NA rows in missing genes
   rownames(X2) <- ebpp_genes_sig$Symbol
 
-  return(X2)
+  return(list(Subset=X2, matchError=matchError))
 }
 
 
@@ -85,18 +98,33 @@ callSubtypes <- function(mods, X) {
 #' @examples
 #' calls <- callEnsemble(mods, X, Y)
 #'
-callEnsemble <- function(X, path='data', geneids='symbol') {
+callEnsemble <- function(X, path='data', geneids='symbol') {  ## add new parameter, RNA-seq or io360
 
-  data('subtype_caller_model')
+  ## if datasource == 'RNA-seq'
+  
+     data('subtype_caller_model')  ## This is only for a EBPP classifier ##
 
-  if (path == 'data') {
+  ## else if the datasource == 'io360 ###
+
+     ## data('subtype_caller_io360_model')
+  
+  if (path == 'data') {  ## and datasource == 'RNAseq'
     data("ensemble_model")
+    
+  ## else if path == 'data' and datasource == 'io360'
+    ##data(io360_model)
+    
   } else {
     load(path)
   }
-
-  X <- geneMatch(X, geneids)
-
+  
+  
+  res0 <- geneMatch(X, geneids) ## datasource param here.
+  
+  X <- res0$Subset
+  matchError <- res0$matchError
+  
+  
   eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
   ePart <- lapply(eList, function(a) a[,3:8])
   eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ens)) )
