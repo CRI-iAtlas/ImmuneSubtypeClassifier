@@ -131,14 +131,13 @@ fitEnsembleModel <- function(Xs, Ys, n=5, sampSize=0.7, breakVec=c(0, 0.25, 0.5,
     return(modi)    
   }
 
-
-  clusterExport(cl, 'Xs')
-  clusterExport(cl, 'Ys')
-  clusterExport(cl, 'sampSize')
-  clusterExport(cl, 'breakVec')
-  clusterExport(cl, 'params')
-  clusterExport(cl, 'ptail')
-  clusterExport(cl, 'fitFun')
+  clusterExport(cl, 'Xs',  envir=environment())
+  clusterExport(cl, 'Ys',  envir=environment())
+  clusterExport(cl, 'sampSize',  envir=environment())
+  clusterExport(cl, 'breakVec',  envir=environment())
+  clusterExport(cl, 'params',  envir=environment())
+  clusterExport(cl, 'ptail',  envir=environment())
+  clusterExport(cl, 'fitFun',  envir=environment())
 
   ens <- parLapply(cl=cl, X=1:n, fun = fitFun)
 
