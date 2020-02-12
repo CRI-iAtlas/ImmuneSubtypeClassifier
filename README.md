@@ -38,6 +38,27 @@ Where gene IDs are 'symbol', 'entrez', or 'ensembl'.
 If you want to be safe, map your own gene IDs to symbols, 
 using your favorite method.
 
+But, to see where and if gene ID matches have failed:
+
+```{r}
+
+calls <- geneMatchErrorReport(X=Xtest, geneids='symbol')
+
+```
+This returns the proportion of missing genes (from 485 total)
+and a data.frame of missing gene IDs.
+
+```
+$matchError
+[1] 0.03505155
+
+$missingGenes
+        Symbol Entrez         Ensembl
+1794  C12orf24  29902 ENSG00000204856
+1841  C13orf18  80183 ENSG00000102445
+1844  C13orf27  93081 ENSG00000151287
+```
+
 The resulting 'calls' will have 'best calls' in the first column, and probabilities
 of belonging to each subtype after that.
 

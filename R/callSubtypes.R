@@ -47,6 +47,62 @@ geneMatch <- function(X, geneid='pairs') {  ## add datasource param  (RNAseq or 
 }
 
 
+#' geneMatchErrorReport
+#' Check whether the incoming data matches the 485 model gene IDs
+#' @export
+#' @param X gene expression matrix, genes in rows, samples in columns
+#' @return list with percent missing genes and a vector of missing genes
+#' @examples
+#' missingGenes <- geneMatchErrorReport(X)
+#'
+geneMatchErrorReport <- function(X, geneid='pairs') {
+  data(ebpp_gene)
+  
+  if (geneid == 'symbol') {
+    idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)  ### this is just for the EBPP genes ###
+    
+  } else if (geneid == 'entrez') {
+    idx <- match(table = rownames(X), x = ebpp_genes_sig$Entrez)
+    
+  } else if (geneid == 'ensembl') {
+    ensemble <- str_split(rownames(X), pattern = '\\.')
+    ensemble <- unlist(lapply(ensemble, function(a) a[1]))
+    idx <- match(table = ensemble, x = ebpp_genes_sig$Ensembl)
+    
+  } else if (geneid == 'pairs') {
+    return(X)
+    
+  } else {
+    print("For geneids, please use:  symbol, entrez, ensembl")
+    return(NA)
+  }
+  
+  # idx will be 485 elements long... non matched ebpp_sig_genes
+  # will show as NAs in the list.
+  
+  # SO... we calculate sum of NAs over size of ebpp_genes_sig
+  
+  matchError <- sum(is.na(idx)) / nrow(ebpp_genes_sig)
+  
+  # NAs in idx will enter NA rows in X2 
+  
+  g <- ebpp_genes_sig[is.na(idx),]  ### Adds NA rows in missing genes
+
+  return(list(matchError=matchError, missingGenes=g))
+}
+
+reportError <- function(err) {
+  print("**************************************")
+  print("    Gene Match Error Report           ")
+  print("                                      ")
+  print(paste0("  percent missing genes: ",err*100,"           "))
+  print("                                      ")
+  print("see ?geneMatchErrorReport for details ")
+  print("                                      ")
+  print("**************************************")
+}
+
+
 #' callOneSubtype
 #' Make subtype calls for one sample
 #' @export
@@ -123,7 +179,7 @@ callEnsemble <- function(X, path='data', geneids='symbol') {  ## add new paramet
   
   X <- res0$Subset
   matchError <- res0$matchError
-  
+  reportError(matchError)
   
   eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
   ePart <- lapply(eList, function(a) a[,3:8])
@@ -166,6 +222,8 @@ parCallEnsemble <- function(X, path='data', geneids='symbol', numCores=2) {
   }
 
   X <- geneMatch(X, geneids)
+  matchError <- res0$matchError
+  reportError(matchError)
 
   cl <- makeForkCluster(numCores)
 
