@@ -5,8 +5,11 @@
 \title{fitOneModel
 Train a single subtype model.}
 \usage{
-fitOneModel(Xbin, Ybin, params = list(max_depth = 2, eta = 0.5, nrounds =
-  33, nthread = 5))
+fitOneModel(
+  Xbin,
+  Ybin,
+  params = list(max_depth = 2, eta = 0.5, nrounds = 33, nthread = 5)
+)
 }
 \arguments{
 \item{Xbin}{Gene expression matrix.}

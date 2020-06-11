@@ -5,9 +5,16 @@
 \title{fitEnsembleModel
 Train a single subtype model using cross validation}
 \usage{
-fitEnsembleModel(Xs, Ys, n = 5, sampSize = 0.7, breakVec = c(0, 0.25,
-  0.5, 0.75, 1), params = list(max_depth = 5, eta = 0.5, nrounds = 100,
-  nthread = 5, nfold = 5), ptail = 0.01, numCores = 2)
+fitEnsembleModel(
+  Xs,
+  Ys,
+  n = 5,
+  sampSize = 0.7,
+  breakVec = c(0, 0.25, 0.5, 0.75, 1),
+  params = list(max_depth = 5, eta = 0.5, nrounds = 100, nthread = 5, nfold = 5),
+  ptail = 0.01,
+  numCores = 2
+)
 }
 \arguments{
 \item{Xs}{Gene expression matrix, samples in columns, genes in rows}

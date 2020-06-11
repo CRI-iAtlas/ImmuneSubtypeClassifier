@@ -5,8 +5,13 @@
 \title{trainDataProc
 Data preprocessing}
 \usage{
-trainDataProc(Xmat, Yvec, subtype = 1, ptail = 0.01, breakVec = c(0,
-  0.25, 0.5, 0.75, 1))
+trainDataProc(
+  Xmat,
+  Yvec,
+  subtype = 1,
+  ptail = 0.01,
+  breakVec = c(0, 0.25, 0.5, 0.75, 1)
+)
 }
 \arguments{
 \item{Xmat}{Matrix of gene expression, samples in columns, genes in rows}

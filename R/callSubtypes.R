@@ -1,5 +1,72 @@
 
 
+geneMatchTCGA <- function(X, geneid, mode) {
+  if (geneid == 'symbol') {
+    idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)  ### this is just for the EBPP genes ###
+  } else if (geneid == 'entrez') {
+    idx <- match(table = rownames(X), x = ebpp_genes_sig$Entrez)
+  } else if (geneid == 'ensembl') {
+    ensemble <- str_split(rownames(X), pattern = '\\.')
+    ensemble <- unlist(lapply(ensemble, function(a) a[1]))
+    idx <- match(table = ensemble, x = ebpp_genes_sig$Ensembl)
+  } else if (geneid == 'pairs') {
+    return(X)
+  } else {
+    print("For geneids, please use:  symbol, entrez, ensembl")
+    return(NA)
+  }
+}
+
+
+geneMatchNano <- function(X, geneid, mode) {
+  if (geneid == 'symbol') {
+    idx <- match(table = rownames(X), x = nano_genes_full$Symbol)  ### this is just for the EBPP genes ###
+  } else if (geneid == 'entrez') {
+    idx <- match(table = rownames(X), x = nano_genes_full$Entrez)
+  } else if (geneid == 'ensembl') {
+    ensemble <- str_split(rownames(X), pattern = '\\.')
+    ensemble <- unlist(lapply(ensemble, function(a) a[1]))
+    idx <- match(table = ensemble, x = nano_genes_full$Ensembl)
+  } else if (geneid == 'pairs') {
+    return(X)
+  } else {
+    print("For geneids, please use:  symbol, entrez, ensembl")
+    return(NA)
+  }
+}
+
+
+#' geneMatch2
+#' Match the incoming data to what was used in training
+#' @export
+#' @param X gene expression matrix, genes in rows, samples in columns
+#' @return X, but with genes matching the ebpp set, missing genes are NAs
+#' @examples
+#' Xprime <- geneMatch(X)
+#'
+geneMatch2 <- function(X, geneid='pairs', mode) {  ## add datasource param  (RNAseq or io360)
+  
+  data('gene_match_data')
+  
+  if (mode == 'tcga_model') {
+    idx <- geneMatchTCGA(X, geneid, mode)
+    matchError <- sum(is.na(idx)) / nrow(ebpp_genes_sig)
+    X2 <- X[idx,]  ### Adds NA rows in missing genes
+    rownames(X2) <- ebpp_genes_sig$Symbol
+    
+  } else if (mode == 'io360_model') {
+    idx <- geneMatchNano(X, geneid, mode)
+    matchError <- sum(is.na(idx)) / nrow(nano_genes_full)
+    X2 <- X[idx,]  ### Adds NA rows in missing genes
+    rownames(X2) <- nano_genes_full$Symbol
+  }
+  
+  return(list(Subset=X2, matchError=matchError))
+}
+
+
+
+
 #' geneMatch
 #' Match the incoming data to what was used in training
 #' @export
@@ -200,6 +267,87 @@ callEnsemble <- function(X, path='data', geneids='symbol') {  ## add new paramet
 
 
 
+
+
+#' geneMatch2
+#' Match the incoming data to what was used in training
+#' @export
+#' @param X gene expression matrix, genes in rows, samples in columns
+#' @return X, but with genes matching the ebpp set, missing genes are NAs
+#' @examples
+#' Xprime <- geneMatch(X)
+#'
+geneMatch2 <- function(X, geneid='pairs', mode) {  ## add datasource param  (RNAseq or io360)
+  
+  data('gene_match_data')
+  
+  if (mode == 'tcga_model') {
+    idx <- geneMatchTCGA(X, geneid, mode)
+    matchError <- sum(is.na(idx)) / nrow(ebpp_genes_sig)
+    X2 <- X[idx,]  ### Adds NA rows in missing genes
+    rownames(X2) <- ebpp_genes_sig$Symbol
+    
+  } else if (mode == 'io360_model') {
+    idx <- geneMatchNano(X, geneid, mode)
+    matchError <- sum(is.na(idx)) / nrow(nano_genes_full)
+    X2 <- X[idx,]  ### Adds NA rows in missing genes
+    rownames(X2) <- nano_genes_full$Symbol
+  }
+  
+  return(list(Subset=X2, matchError=matchError))
+}
+
+
+
+#' callEnsemble2
+#' Make subtype calls for each sample
+#' @export
+#' @param X gene expression matrix, genes in row.names, samples in column.names
+#' @param path the path to the ensemble model, stored as RData, and named 'ens'
+#' @param geneids either hgnc for gene symbols or entrez ids. will be matched to the EB++ matrix
+#' @param datasource either RNA-seq or io360 for the Nanostring platform
+#' @return table, column 1 is best call, remaining columns are subtype prediction scores.
+#' @examples
+#' calls <- callEnsemble(mods, X, Y)
+#'
+callEnsemble2 <- function(X, path='data', geneids='symbol', datasource='RNA-seq') {  ## add new parameter, RNA-seq or io360
+  
+  
+  if (datasource == 'RNA-seq' || datasource == 'RNAseq' || datasource == 'rnaseq') {
+    mode='tcga_model'  ## This is only for a EBPP classifier ##
+  } else if (datasource == 'io360') {
+    mode='io360_model'
+  } 
+  
+  if (path != 'data') {  ## and datasource == 'RNAseq'
+    load(path)
+  } else {
+    data(mode)
+  }
+  
+  res0 <- geneMatch2(X, geneids, mode) ## datasource param here.
+  
+  X <- res0$Subset
+  matchError <- res0$matchError
+  reportError(matchError)
+  
+  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
+  ePart <- lapply(eList, function(a) a[,3:8])
+  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ens)) )
+  eMeds  <- apply( eStack , 1:2 , median )
+  eMeds <- as.data.frame(eMeds)
+  colnames(eMeds) <- 1:6 # names(mods)
+  #bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
+  predCall <- predict(scaller, as.matrix(eMeds)) + 1
+  
+  sampleIDs <- eList[[1]][,1]
+  res0 <- data.frame(SampleIDs=sampleIDs, BestCall=predCall, eMeds)
+  colnames(res0)[3:8] <- 1:6
+  return(res0)
+}
+
+
+
 #' parCallEnsemble
 #' Parallel version: Make subtype calls for each sample
 #' @export
@@ -213,9 +361,8 @@ callEnsemble <- function(X, path='data', geneids='symbol') {  ## add new paramet
 #'
 parCallEnsemble <- function(X, path='data', geneids='symbol', numCores=2) {
 
-  data('subtype_caller_model')
-
   if (path == 'data') {
+    data('subtype_caller_model')
     data("ensemble_model")
   } else {
     load(path)
