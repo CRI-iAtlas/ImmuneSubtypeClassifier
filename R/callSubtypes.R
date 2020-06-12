@@ -224,20 +224,10 @@ callSubtypes <- function(mods, X) {
 #'
 callEnsemble <- function(X, path='data', geneids='symbol') {  ## add new parameter, RNA-seq or io360
 
-  ## if datasource == 'RNA-seq'
-  
-     data('subtype_caller_model')  ## This is only for a EBPP classifier ##
+  data('subtype_caller_model')  ## This is only for a EBPP classifier ##
 
-  ## else if the datasource == 'io360 ###
-
-     ## data('subtype_caller_io360_model')
-  
   if (path == 'data') {  ## and datasource == 'RNAseq'
     data("ensemble_model")
-    
-  ## else if path == 'data' and datasource == 'io360'
-    ##data(io360_model)
-    
   } else {
     load(path)
   }

@@ -192,7 +192,7 @@ dataProc <- function(X, mods=NULL, ci=NA) {
   rownames(Xbinned) <- rownames(Xmat)
 
   # and subset the genes to those not in pairs
-  Xbinned <- Xbinned[singleGenes,]
+  Xbinned <- Xbinned[rownames(Xbinned) %in% singleGenes,]
 
   # here we have expression data, and we're using the pairs model
   # so we need to make pairs features.
