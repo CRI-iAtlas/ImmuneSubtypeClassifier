@@ -248,15 +248,15 @@ callEnsemble <- function(X, path='data', geneids='symbol') {  ## add new paramet
   matchError <- res0$matchError
   reportError(matchError)
   
-  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
+  eList <- lapply(ensemble_model, function(ei) callSubtypes(mods=ei, X=X))
   ePart <- lapply(eList, function(a) a[,3:8])
-  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ens)) )
+  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ensemble_model)) )
   eMeds  <- apply( eStack , 1:2 , median )
   eMeds <- as.data.frame(eMeds)
   colnames(eMeds) <- 1:6 # names(mods)
 
   #bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
-  predCall <- predict(scaller, as.matrix(eMeds)) + 1
+  predCall <- predict(subtype_model, as.matrix(eMeds)) + 1
 
   sampleIDs <- eList[[1]][,1]
 
@@ -335,14 +335,14 @@ callEnsemble2 <- function(X, path='data', geneids='symbol', datasource='RNA-seq'
   matchError <- res0$matchError
   reportError(matchError)
   
-  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
+  eList <- lapply(ensemble_model, function(ei) callSubtypes(mods=ei, X=X))
   ePart <- lapply(eList, function(a) a[,3:8])
-  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ens)) )
+  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ensemble_model)) )
   eMeds  <- apply( eStack , 1:2 , median )
   eMeds <- as.data.frame(eMeds)
   colnames(eMeds) <- 1:6 # names(mods)
   #bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
-  predCall <- predict(scaller, as.matrix(eMeds)) + 1
+  predCall <- predict(subtype_model, as.matrix(eMeds)) + 1
   
   sampleIDs <- eList[[1]][,1]
   res0 <- data.frame(SampleIDs=sampleIDs, BestCall=predCall, eMeds)
@@ -379,18 +379,18 @@ parCallEnsemble <- function(X, path='data', geneids='symbol', numCores=2) {
   cl <- makeForkCluster(numCores)
 
   #eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
-  eList <- parLapply(cl=cl, X=1:length(ens), fun=function(ei) callSubtypes(mods=ens[[ei]], X=X))
+  eList <- parLapply(cl=cl, X=1:length(ensemble_model), fun=function(ei) callSubtypes(mods=ensemble_model[[ei]], X=X))
 
   stopCluster(cl)
 
   ePart <- lapply(eList, function(a) a[,3:8])
-  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ens)) )
+  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ensemble_model)) )
   eMeds  <- apply( eStack , 1:2 , median )
   eMeds <- as.data.frame(eMeds)
   colnames(eMeds) <- 1:6 # names(mods)
 
   #bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
-  predCall <- predict(scaller, as.matrix(eMeds)) + 1
+  predCall <- predict(subtype_model, as.matrix(eMeds)) + 1
 
   sampleIDs <- eList[[1]][,1]
 
