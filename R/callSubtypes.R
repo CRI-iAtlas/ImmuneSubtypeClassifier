@@ -322,7 +322,11 @@ callEnsemble2 <- function(X, path='data', geneids='symbol', datasource='RNA-seq'
   if (path != 'data') {  ## and datasource == 'RNAseq'
     load(path)
   } else {
-    data(mode)
+    if (mode == 'tcga_model') {
+      data('tcga_models')
+    } else if (mode == 'io360') {
+      data('io360_models')
+    }
   }
   
   res0 <- geneMatch2(X, geneids, mode) ## datasource param here.
