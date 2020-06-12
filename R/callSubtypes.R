@@ -158,6 +158,7 @@ geneMatchErrorReport <- function(X, geneid='pairs') {
   return(list(matchError=matchError, missingGenes=g))
 }
 
+
 reportError <- function(err) {
   print("**************************************")
   print("    Gene Match Error Report           ")
@@ -240,7 +241,6 @@ callEnsemble <- function(X, path='data', geneids='symbol') {  ## add new paramet
   } else {
     load(path)
   }
-  
   
   res0 <- geneMatch(X, geneids) ## datasource param here.
   
