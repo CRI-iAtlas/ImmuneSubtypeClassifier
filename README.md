@@ -12,6 +12,10 @@ This is an R package for classification of PanCancer immune subtypes. Five gene 
 library(devtools)
 install_github("Gibbsdavidl/ImmuneSubtypeClassifier")
 
+# Right Now, the newest version of xgboost is incompatible. 
+# Please use a prior version, 1.0.0.1 or 1.0.0.2 should work.
+devtools::install_version("xgboost", version = "1.0.0.1")
+
 library(ImmuneSubtypeClassifier)
 ```
 
