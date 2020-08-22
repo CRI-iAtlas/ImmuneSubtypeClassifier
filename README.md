@@ -46,7 +46,7 @@ But, to see where and if gene ID matches have failed:
 
 ```{r}
 
-calls <- geneMatchErrorReport(X=Xtest, geneids='symbol')
+calls <- geneMatchErrorReport(X=Xtest, geneid='symbol')
 
 ```
 This returns the proportion of missing genes (from 485 total)
