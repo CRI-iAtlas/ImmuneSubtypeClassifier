@@ -120,3 +120,14 @@ res0
 These results match what's found on cri-iatlas.org / tools.
 
 
+
+In looking at feature importance: 
+You will see that really important features for classification are based on doing the binary gene-gene comparison, but on a signature level.  It summarizes the question "are the genes in signature 1 (s1) expressed at a lower level than signature 2 (s2)?"  In short "s1s2".  
+
+label signature_name
+s1	  LIexpression_score	
+s2	  CSF1_response	
+s3	  Module3_IFN_score	
+s4	  TGFB_score_21050467	
+s5	  CHANG_CORE_SERUM_RESPONSE_UP	
+
