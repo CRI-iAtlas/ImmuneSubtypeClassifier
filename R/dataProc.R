@@ -106,7 +106,7 @@ createPairsFeatures <- function(X, genes) {
       pval <- as.numeric(X[gi,])            ## pivot values across samples
       idx <- match(table=rownames(X), x=gs) ## get index to genes for this pivot
       Xsub <- X[idx,]                       ## subset the matrix, NAs for missing genes, pivot gene on top
-      if (class(Xsub) == 'numeric' & length(gs) == 1) {
+      if (class(Xsub)[1] == 'numeric' & length(gs) == 1) {
         Xsub <- matrix(data=Xsub, ncol=ncol(X), nrow=1)
         colnames(Xsub) <- colnames(X)
       }
