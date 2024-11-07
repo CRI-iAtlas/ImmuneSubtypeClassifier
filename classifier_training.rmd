@@ -5,18 +5,178 @@ output: html_document
 
 Here we'll be using the new robencla package to train a classifier and do some experiments.
 ```{r}
-devtools::install_github('gibbsdavidl/robencla')
+devtools::install_github('gibbsdavidl/robencla',force=T)
 ```
 OK then
 ```{r}
 library(robencla)
+library(readr)
 ```
 
-Type any R code in the chunk, for example:
+Load in our data and gene features
 ```{r}
-mycars <- within(mtcars, { cyl <- ordered(cyl) })
-mycars
+load("E:/Work/GBM_clusters/ImmuneSubtypeClassifier/data/geneSetSymbols.rda")
+load("E:/Work/GBM_clusters/ImmuneSubtypeClassifier/data/modelgenes.rda")
+load("E:/Work/GBM_clusters/ImmuneSubtypeClassifier/data/ebpp_gene.rda")
+label_table <- read_table('inst/data/five_signature_mclust_ensemble_results.tsv.gz')
+
+label_table$ClusterModel1 <- as.character(label_table$ClusterModel1)
 ```
 
-Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk.
-Click the **Knit and Open Document** to build and preview an output.
+
+Load in the expression data:
+```{r}
+dat <- read_csv("E:/Work/iatlas/Subtype_Classifier_Training_Dir/data/EBpp_pancancer.csv.gz")
+
+# let's randomize columns with zero variance
+idx <- which(apply(dat, 2, var) == 0)
+for (i in idx) {
+  dat[,i] <- rnorm(n=9129)
+}
+
+#dat$AliquotBarcode <- label_table$AliquotBarcode
+dat$Class <- sapply(as.character(label_table$ClusterModel1), FUN = function(A) paste0("C",A))
+```
+Let's make a mini feature set:
+
+```{r}
+
+# pick out genes that are in the data
+genes <- colnames(dat)[colnames(dat) %in% ebpp_genes_sig$Symbol]
+
+pair_features <- list()
+for (ci in 1:6) {
+  print(ci)
+  gs <- sample(genes, size = 10, replace = F)
+  pair_features[[ci]] <- gs
+}
+
+names(pair_features) <- c('C1','C2','C3','C4','C5','C6')
+
+sig_features <- list()
+for (li in names(genesetsymbols)) {
+  print(li)
+  gs <- genesetsymbols[[li]][genesetsymbols[[li]] %in% colnames(dat)]
+  sig_features[[li]] <- sample(gs, size = 10, replace = F)
+}
+
+```
+
+```{r}
+# XGBoost parameters to pass to each sub-classifier in the ensembles
+params <- list(
+               max_depth=12,    # "height" of the tree, 6 is actually default. I think about 12 seems better.  (xgboost parameter)
+               eta=0.3,        # this is the learning rate. smaller values slow it down, more conservative   (xgboost parameter)
+               nrounds=24,     # number of rounds of training, lower numbers less overfitting (potentially)  (xgboost parameter)
+               early_stopping_rounds=2, # number of rounds without improvment stops the training (xgboost early_stopping_rounds)
+               nthreads=4,     # parallel threads
+               gamma=0.0,      # min loss required to again split a leaf node. higher ~ more conservative (xgboost parameter)
+               lambda=1.0,     # L2 regularization term on weights, higher number ~ more conservative (xgboost parameter)
+               alpha=0.0,      # L1 regularization term on weights. higher number ~ more conservative (xgboost parameter)
+               size=21,        # Size of the ensemble, per binary prediction 
+               sample_prop=0.8, # The percentage of data used to train each ensemble member.
+               feature_prop=0.8, # The percentage of data used to train each ensemble member.
+               subsample=0.8,   # the xgboost machines subsample at this rate. 
+               combine_function='median',  # How the ensemble should be combined. Only median currently.
+               verbose=0)
+
+
+```
+
+
+```{r}
+
+mod <- Robencla$new("Test1")
+
+mod$version
+
+mod$train(data_frame = dat,
+          label_name = 'Class',
+          sample_id  = 'Barcode',
+          data_mode  = 'pairs',
+          pair_list  = pair_features,
+          params = params 
+          )
+
+mod$predict(data_frame = dat,
+            label_name = 'Class',
+            sample_id  = 'Barcode')
+
+
+df <- mod$results(include_label = T)
+
+# create a confusion matrix
+table(Label=df$Label, Pred=df$BestCalls)
+
+# Prediction metrics on the test set predictions
+#mod$classification_metrics(use_cv_results = F) 
+
+# Get the importance of features in each ensemble member
+# these are found by combining the importance measures across the ensemble
+#mod$importance()
+
+# Plot the ROC curves for each classpar(mar=c(3,3,3,3))
+#plot_roc(mod, 'C3')
+
+#ensemble_rocs(mod)
+
+#plot_pred_final(mod, cluster = T)
+
+colnames(mod$ensbl[[1]]$train_data)
+```
+
+
+```{r}
+
+mod$autocv(
+
+  # The data to use for training
+  data_frame=dat,
+
+  # The name of the column containing the training label
+  label_name='Class',
+  
+  # The column containing the sample ID
+  sample_id = 'Barcode',
+
+  # The number of cross validation folds to predict on, ignores data_split if >1.
+  cv_rounds=5,
+            
+  # The data transformation mode, set using  allpairs, pairs,sigpairs, quartiles,tertiles,binarize,ranks,original
+  data_mode=c('pairs'),  # pairs takes LR pairs from the pair_list, allpairs forms all pairs from pair_list
+  
+  # If using signature pairs, then the list defining the signatures, must be composed of column names
+  signatures=sig_features,
+  
+  # Use only these features for the pairs
+  pair_list=pair_features,
+  
+  # The XGBoost parameters (and a few extra params)
+  params=params, 
+  
+  verbose=T
+  )
+
+
+mod$train(data_frame=dat,
+          label_name='Class',
+          sample_id = 'AliquotBarcode',
+          data_mode=c('namedpairs'), 
+          pair_list=pair_features,
+          signatures=NULL,
+          params=params)
+
+```
+
+```{r}
+res0 <- mod$results()
+
+mod$classification_metrics()
+
+table(Label=mod$test_label, Pred=mod$results(include_label = T)$BestCalls)
+
+mod$importance() 
+
+plot_pred_final(mod)
+```
+
