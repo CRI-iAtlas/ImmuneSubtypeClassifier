@@ -2,22 +2,45 @@
 % Please edit documentation in R/callSubtypes.R
 \name{geneMatch}
 \alias{geneMatch}
-\title{geneMatch
-Match the incoming data to what was used in training}
+\title{Match Gene IDs to Model Features}
 \usage{
-geneMatch(X, geneid = "pairs")
+geneMatch(X, geneid = "pairs", sampleid = "SampleBarcode")
 }
 \arguments{
-\item{X}{gene expression matrix, genes in rows, samples in columns}
+\item{X}{Gene expression matrix with genes in rows and samples in columns.}
+
+\item{geneid}{Character string specifying the gene ID type in the row names.
+One of "symbol" (HGNC symbols), "entrez" (Entrez IDs), "ensembl"
+(Ensembl IDs with optional version suffix), or "pairs" (already matched,
+returns input unchanged). Default is "pairs".}
+
+\item{sampleid}{Character string specifying the sample ID column name.
+Default is "SampleBarcode".}
 }
 \value{
-X, but with genes matching the ebpp set, missing genes are NAs
+A list containing:
+  \item{Subset}{Matrix with rows reordered/subset to match model features.
+    Missing genes appear as NA rows.}
+  \item{matchError}{Numeric, proportion of model genes not found in input
+    (0 = perfect match, 1 = no genes matched).}
 }
 \description{
-geneMatch
-Match the incoming data to what was used in training
+Match the incoming data gene identifiers to the features used in training.
+Supports multiple gene ID formats.
+}
+\details{
+The function loads the \code{ebpp_genes_sig} reference data containing
+the gene identifiers used during model training. Input genes are matched
+to this reference, and the output matrix is reordered accordingly.
+Genes present in the reference but missing from the input will have
+NA values in the output.
 }
 \examples{
-Xprime <- geneMatch(X)
+\dontrun{
+# Match by gene symbol
+result <- geneMatch(expr_matrix, geneid = "symbol")
+matched_data <- result$Subset
+pct_missing <- result$matchError
+}
 
 }

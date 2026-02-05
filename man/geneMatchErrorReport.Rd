@@ -2,22 +2,31 @@
 % Please edit documentation in R/callSubtypes.R
 \name{geneMatchErrorReport}
 \alias{geneMatchErrorReport}
-\title{geneMatchErrorReport
-Check whether the incoming data matches the 485 model gene IDs}
+\title{Report Missing Gene Statistics}
 \usage{
-geneMatchErrorReport(X, geneid = "pairs")
+geneMatchErrorReport(X, geneid = "symbol")
 }
 \arguments{
-\item{X}{gene expression matrix, genes in rows, samples in columns}
+\item{X}{Gene expression matrix with genes in rows and samples in columns.}
+
+\item{geneid}{Character string specifying the gene ID type. One of
+"symbol", "entrez", "ensembl", or "pairs". Default is "pairs".}
 }
 \value{
-list with percent missing genes and a vector of missing genes
+A list containing:
+  \item{matchError}{Numeric, proportion of model genes not found in input.}
+  \item{missingGenes}{Data frame of genes required by the model but not
+    present in the input data.}
 }
 \description{
-geneMatchErrorReport
-Check whether the incoming data matches the 485 model gene IDs
+Check whether the incoming data matches the model's required gene IDs
+and report which genes are missing.
 }
 \examples{
-missingGenes <- geneMatchErrorReport(X)
+\dontrun{
+report <- geneMatchErrorReport(expr_matrix, geneid = "symbol")
+cat("Missing", report$matchError * 100, "\% of genes\n")
+print(report$missingGenes)
+}
 
 }

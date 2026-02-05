@@ -1,249 +1,313 @@
+#' @import data.table
+#' @importFrom magrittr %>%
+#' @importFrom dplyr group_by summarise arrange desc
+#' @importFrom xgboost xgb.importance
+NULL
 
-
-#' geneMatch
-#' Match the incoming data to what was used in training
-#' @export
-#' @param X gene expression matrix, genes in rows, samples in columns
-#' @return X, but with genes matching the ebpp set, missing genes are NAs
-#' @examples
-#' Xprime <- geneMatch(X)
+#' Match Gene IDs to Model Features
 #'
-geneMatch <- function(X, geneid='pairs') {  ## add datasource param  (RNAseq or io360)
+#' Match the incoming data gene identifiers to the features used in training.
+#' Supports multiple gene ID formats.
+#'
+#' @param X Gene expression matrix with genes in rows and samples in columns.
+#' @param geneid Character string specifying the gene ID type in the row names.
+#'   One of "symbol" (HGNC symbols), "entrez" (Entrez IDs), "ensembl"
+#'   (Ensembl IDs with optional version suffix), or "pairs" (already matched,
+#'   returns input unchanged). Default is "pairs".
+#' @param sampleid Character string specifying the sample ID column name.
+#'   Default is "SampleBarcode".
+#'
+#' @return A list containing:
+#'   \item{Subset}{Matrix with rows reordered/subset to match model features.
+#'     Missing genes appear as NA rows.}
+#'   \item{matchError}{Numeric, proportion of model genes not found in input
+#'     (0 = perfect match, 1 = no genes matched).}
+#'
+#' @details
+#' The function loads the \code{ebpp_genes_sig} reference data containing
+#' the gene identifiers used during model training. Input genes are matched
+#' to this reference, and the output matrix is reordered accordingly.
+#' Genes present in the reference but missing from the input will have
+#' NA values in the output.
+#'
+#' @examples
+#' \dontrun{
+#' # Match by gene symbol
+#' result <- geneMatch(expr_matrix, geneid = "symbol")
+#' matched_data <- result$Subset
+#' pct_missing <- result$matchError
+#' }
+#'
+#' @export
+geneMatch <- function(X, geneid = "pairs", sampleid = "SampleBarcode") {
 
-  data(ebpp_gene)
+  X <- as.data.frame(X)
 
-  if (geneid == 'symbol') {
-    idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)  ### this is just for the EBPP genes ###
+  modelgenes <- unique(as.vector(unlist(getDefaultPairList())))
 
-  } else if (geneid == 'entrez') {
-    idx <- match(table = rownames(X), x = ebpp_genes_sig$Entrez)
-    
-  } else if (geneid == 'ensembl') {
-    ensemble <- str_split(rownames(X), pattern = '\\.')
-    ensemble <- unlist(lapply(ensemble, function(a) a[1]))
-    idx <- match(table = ensemble, x = ebpp_genes_sig$Ensembl)
-    
-  } else if (geneid == 'pairs') {
-    return(X)
-    
+  data(ebpp_gene, envir = environment())
+
+  gene_map <- ebpp_genes_sig[ebpp_genes_sig$Symbol %in% modelgenes, ]
+
+  if (geneid == "symbol") {
+    idx <- match(x = gene_map$Symbol, table = colnames(X))
+  } else if (geneid == "entrez") {
+    idx <- match(x = gene_map$Entrez, table = colnames(X))
+  } else if (geneid == "ensembl") {
+    input_ens <- stringr::str_split(colnames(X), pattern = "\\.")
+    input_ens <- vapply(input_ens, function(a) a[1], character(1))
+    idx <- match(x = gene_map$Ensembl, table = input_ens)
+  } else if (geneid == "pairs") {
+    return(list(Subset = X, matchError = 0))
   } else {
-    print("For geneids, please use:  symbol, entrez, ensembl")
-    return(NA)
+    stop("For geneid, please use: symbol, entrez, ensembl, or pairs")
   }
 
-  # idx will be 485 elements long... non matched ebpp_sig_genes
-  # will show as NAs in the list.
-  
-  # SO... we calculate sum of NAs over size of ebpp_genes_sig
+  matchError <- sum(is.na(idx)) / nrow(gene_map)
 
-  matchError <- sum(is.na(idx)) / nrow(ebpp_genes_sig)
+  # Subset COLUMNS, but keep sample ID column
+  gene_cols <- idx[!is.na(idx)]
+  # Instead of X2 <- X[, gene_cols, drop = FALSE]
+  X2 <- X[, gene_cols, drop = FALSE]
 
-  # NAs in idx will enter NA rows in X2 
-  
-  X2 <- X[idx,]  ### Adds NA rows in missing genes
-  rownames(X2) <- ebpp_genes_sig$Symbol
+  colnames(X2) <- gene_map$Symbol[!is.na(idx)]
 
-  return(list(Subset=X2, matchError=matchError))
-}
-
-
-#' geneMatchErrorReport
-#' Check whether the incoming data matches the 485 model gene IDs
-#' @export
-#' @param X gene expression matrix, genes in rows, samples in columns
-#' @return list with percent missing genes and a vector of missing genes
-#' @examples
-#' missingGenes <- geneMatchErrorReport(X)
-#'
-geneMatchErrorReport <- function(X, geneid='pairs') {
-  data(ebpp_gene)
-  
-  if (geneid == 'symbol') {
-    idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)  ### this is just for the EBPP genes ###
-    
-  } else if (geneid == 'entrez') {
-    idx <- match(table = rownames(X), x = ebpp_genes_sig$Entrez)
-    
-  } else if (geneid == 'ensembl') {
-    ensemble <- str_split(rownames(X), pattern = '\\.')
-    ensemble <- unlist(lapply(ensemble, function(a) a[1]))
-    idx <- match(table = ensemble, x = ebpp_genes_sig$Ensembl)
-    
-  } else if (geneid == 'pairs') {
-    return(X)
-    
-  } else {
-    print("For geneids, please use:  symbol, entrez, ensembl")
-    return(NA)
+  # Preserve sample ID column
+  if (sampleid %in% colnames(X)) {
+    X2[[sampleid]] <- X[[sampleid]]
   }
-  
-  # idx will be 485 elements long... non matched ebpp_sig_genes
-  # will show as NAs in the list.
-  
-  # SO... we calculate sum of NAs over size of ebpp_genes_sig
-  
-  matchError <- sum(is.na(idx)) / nrow(ebpp_genes_sig)
-  
-  # NAs in idx will enter NA rows in X2 
-  
-  g <- ebpp_genes_sig[is.na(idx),]  ### Adds NA rows in missing genes
 
-  return(list(matchError=matchError, missingGenes=g))
+  return(list(Subset = X2, matchError = matchError))
 }
 
+#' Report Missing Gene Statistics
+#'
+#' Check whether the incoming data matches the model's required gene IDs
+#' and report which genes are missing.
+#'
+#' @param X Gene expression matrix with genes in rows and samples in columns.
+#' @param geneid Character string specifying the gene ID type. One of
+#'   "symbol", "entrez", "ensembl", or "pairs". Default is "pairs".
+#'
+#' @return A list containing:
+#'   \item{matchError}{Numeric, proportion of model genes not found in input.}
+#'   \item{missingGenes}{Data frame of genes required by the model but not
+#'     present in the input data.}
+#'
+#' @examples
+#' \dontrun{
+#' report <- geneMatchErrorReport(expr_matrix, geneid = "symbol")
+#' cat("Missing", report$matchError * 100, "% of genes\n")
+#' print(report$missingGenes)
+#' }
+#'
+#' @export
+geneMatchErrorReport <- function(X, geneid = "symbol") {
+
+  modelgenes <- unique(as.vector(unlist(getDefaultPairList())))
+
+  data(ebpp_gene, envir = environment())
+
+  gene_map <- ebpp_genes_sig[ebpp_genes_sig$Symbol %in% modelgenes, ]
+
+  if (geneid == "symbol") {
+    idx <- match(x = gene_map$Symbol, table = colnames(X))
+
+  } else if (geneid == "entrez") {
+    idx <- match(x = gene_map$Entrez, table = colnames(X))
+
+  } else if (geneid == "ensembl") {
+    input_ens <- stringr::str_split(rownames(X), pattern = "\\.")
+    input_ens <- vapply(input_ens, function(a) a[1], character(1))
+    idx <- match(x = gene_map$Ensembl, table = input_ens)
+
+  } else if (geneid == "pairs") {
+    return(list(matchError = 0, missingGenes = data.frame()))
+
+  } else {
+    stop("For geneid, please use: symbol, entrez, ensembl, or pairs")
+  }
+
+  matchError <- sum(is.na(idx)) / nrow(gene_map)
+  missingGenes <- gene_map[is.na(idx), ]
+
+  return(list(matchError = matchError, missingGenes = missingGenes))
+}
+
+#' Print Gene Match Error Report
+#'
+#' Display a formatted report of the gene matching error rate.
+#'
+#' @param err Numeric, the match error proportion (0-1).
+#'
+#' @return NULL (called for side effect of printing).
+#'
+#' @keywords internal
 reportError <- function(err) {
-  print("**************************************")
-  print("    Gene Match Error Report           ")
-  print("                                      ")
-  print(paste0("  percent missing genes: ",err*100,"           "))
-  print("                                      ")
-  print("see ?geneMatchErrorReport for details ")
-  print("                                      ")
-  print("**************************************")
+  message("**************************************")
+  message("    Gene Match Error Report           ")
+  message("                                      ")
+  message(sprintf("  percent missing genes: %.1f%%", err * 100))
+  message("                                      ")
+  message("see ?geneMatchErrorReport for details ")
+  message("                                      ")
+  message("**************************************")
 }
 
 
-#' callOneSubtype
-#' Make subtype calls for one sample
-#' @export
-#' @param mods xgboost model list
-#' @param X gene expression matrix, genes in rows, samples in columns
-#' @param ci cluster label, and index into mods
-#' @return preds of one cluster model.
-#' @examples
-#' calli <- callOneSubtype(mods, X, 4)
+#' Call Immune Subtypes Using Robencla Model
 #'
-callOneSubtype <- function(mods, X, ci) {
-
-  # Xbin needs to have the same columns as the training matrix...
-  print(paste0('calling subtype ', ci))
-  mi <- mods[[ci]]
-  Xbin <- dataProc(X, mods, ci)
-  pred <- predict(mi$bst, Xbin)
-  return(pred)
-}
-
-
-#' callSubtypes
-#' Make subtype calls for each sample
-#' @export
-#' @param mods xgboost model list
-#' @param X gene expression matrix, genes in rows, samples in columns
-#' @return table, column 1 is best call, remaining columns are subtype prediction scores.
-#' @examples
-#' calls <- callSubtypes(mods, X)
+#' Make immune subtype predictions for samples using a trained robencla
+#' ensemble classifier.
 #'
-callSubtypes <- function(mods, X) {
-
-  pList <- lapply(1:6, function(mi) callOneSubtype(mods, X, mi))
-  pMat  <- do.call('cbind', pList)
-  colnames(pMat) <- 1:6 # names(mods)
-  bestCall <- apply(pMat, 1, function(pi) colnames(pMat)[which(pi == max(pi)[1])])
-
-  return(data.frame(SampleID=colnames(X), BestCall=bestCall, pMat, stringsAsFactors=F))
-}
-
-
-#' callEnsemble
-#' Make subtype calls for each sample
-#' @export
-#' @param X gene expression matrix, genes in row.names, samples in column.names
-#' @param path the path to the ensemble model, stored as RData, and named 'ens'
-#' @param geneids either hgnc for gene symbols or entrez ids. will be matched to the EB++ matrix
-#' @return table, column 1 is best call, remaining columns are subtype prediction scores.
-#' @examples
-#' calls <- callEnsemble(mods, X, Y)
+#' @import data.table
+#' @import robencla
 #'
-callEnsemble <- function(X, path='data', geneids='symbol') {  ## add new parameter, RNA-seq or io360
-
-  ## if datasource == 'RNA-seq'
-  
-     data('subtype_caller_model')  ## This is only for a EBPP classifier ##
-
-  ## else if the datasource == 'io360 ###
-
-     ## data('subtype_caller_io360_model')
-  
-  if (path == 'data') {  ## and datasource == 'RNAseq'
-    data("ensemble_model")
-    
-  ## else if path == 'data' and datasource == 'io360'
-    ##data(io360_model)
-    
-  } else {
-    load(path)
+#' @param X Gene expression matrix with genes in rows and samples in columns.
+#'   Row names should be gene identifiers matching the \code{geneid} parameter.
+#'   Column names should be sample identifiers.
+#' @param model A trained robencla model object. If NULL (default), loads
+#'   the package's built-in model.
+#' @param model_path Character string, path to a saved robencla model file
+#'   (.rda format). Used only if \code{model} is NULL and a custom model
+#'   path is desired. Default is NULL (uses built-in model).
+#' @param geneid Character string specifying the gene ID type in row names.
+#'   One of "symbol", "entrez", "ensembl", or "pairs". Default is "symbol".
+#'
+#' @return A data frame with columns:
+#'   \item{SampleIDs}{Sample identifiers from input column names.}
+#'   \item{BestCall}{Predicted subtype (1-6).}
+#'   \item{1-6}{Prediction scores for each subtype.}
+#'
+#' @details
+#' This function wraps the robencla model's predict method to provide a
+#' simple interface for immune subtype classification. It handles gene
+#' matching, data transformation, and reformats the output to match the
+#' legacy interface.
+#'
+#' The robencla model uses named feature pairs and an ensemble of XGBoost
+#' classifiers to make predictions. Each sample receives a score for each
+#' of the 6 immune subtypes, and the BestCall is determined by the model's
+#' final prediction layer.
+#'
+#' @examples
+#' \dontrun{
+#' # Using default built-in model
+#' results <- callSubtypes(expr_matrix, geneid = "symbol")
+#'
+#' # Using a custom model
+#' my_model <- readRDS("path/to/model.rds")
+#' results <- callSubtypes(expr_matrix, model = my_model, geneid = "symbol")
+#'
+#' # View results
+#' table(results$BestCall)
+#' }
+#'
+#' @export
+callSubtypes <- function(X,
+                         model = NULL,
+                         model_path = NULL,
+                         geneid = "symbol",
+                         sampleid = 'Barcode') {
+  library(data.table)
+  library(robencla)
+  if (is.null(model)) {
+    if (!is.null(model_path)) {
+      model <- readRDS(model_path)
+    } else {
+      # Try to auto-load from models directory
+      models_dir <- "model"
+      if (dir.exists(models_dir)) {
+        rds_files <- list.files(models_dir, pattern = "\\.rds$", full.names = TRUE)
+        if (length(rds_files) == 1) {
+          message("Auto-loading model from: ", rds_files[1])
+          model <- readRDS(rds_files[1])
+        } else if (length(rds_files) > 1) {
+          message("Multiple .rds files found in ", models_dir, ". Using: ", rds_files[1])
+          model <- readRDS(rds_files[1])
+        } else {
+          # Fallback to default
+          data("robencla_model", envir = environment())
+          model <- emod
+        }
+      } else {
+        # Fallback to default
+        data("robencla_model", envir = environment())
+        model <- emod
+      }
+    }
   }
-  
-  
-  res0 <- geneMatch(X, geneids) ## datasource param here.
-  
+
+  res0 <- geneMatch(X, geneid, sampleid = sampleid)
   X <- res0$Subset
-  matchError <- res0$matchError
-  reportError(matchError)
-  
-  eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
-  ePart <- lapply(eList, function(a) a[,3:8])
-  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ens)) )
-  eMeds  <- apply( eStack , 1:2 , median )
-  eMeds <- as.data.frame(eMeds)
-  colnames(eMeds) <- 1:6 # names(mods)
+  if (res0$matchError > 0.0) {
+    reportError(res0$matchError)
+  }
 
-  #bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
-  predCall <- predict(scaller, as.matrix(eMeds)) + 1
+  print("Starting prediction")
+  model$predict(
+    data_frame = X,
+    label_name = NULL,
+    sample_id = sampleid
+  )
+  print("finshed prediction")
 
-  sampleIDs <- eList[[1]][,1]
+  results <- model$results()
+  output <- data.frame(
+    SampleIDs = results$SampleID,
+    BestCall = as.integer(gsub("C", "", results$BestCall)),
+    stringsAsFactors = FALSE
+  )
+  score_cols <- grep("^C[1-6]$", colnames(results), value = TRUE)
+  if (length(score_cols) > 0) {
+    scores <- results[, score_cols, drop = FALSE]
+    colnames(scores) <- gsub("C", "", colnames(scores))
+    scores <- scores[, as.character(1:6)]
+    output <- cbind(output, scores)
+  }
+  return(output)
+}
 
-  res0 <- data.frame(SampleIDs=sampleIDs, BestCall=predCall, eMeds)
-  colnames(res0)[3:8] <- 1:6
-  return(res0)
+#' Get Prediction Scores Only
+#'
+#' Extract just the prediction score matrix from subtype calls.
+#'
+#' @param results Data frame returned by \code{\link{callSubtypes}} or
+#'   \code{\link{callEnsemble}}.
+#'
+#' @return A numeric matrix with samples in rows and subtypes (1-6) in columns.
+#'
+#' @examples
+#' \dontrun{
+#' results <- callSubtypes(expr_matrix)
+#' scores <- getScores(results)
+#' heatmap(as.matrix(scores))
+#' }
+#'
+#' @export
+getScores <- function(results) {
+  score_cols <- intersect(colnames(results), as.character(1:6))
+  as.matrix(results[, score_cols, drop = FALSE])
 }
 
 
-
-#' parCallEnsemble
-#' Parallel version: Make subtype calls for each sample
-#' @export
-#' @param X gene expression matrix, genes in row.names, samples in column.names
-#' @param path the path to the ensemble model, stored as RData, and named 'ens'
-#' @param geneids either hgnc for gene symbols or entrez ids. will be matched to the EB++ matrix
-#' @param numCores number of cores to use with parallel lib
-#' @return table, column 1 is best call, remaining columns are subtype prediction scores.
-#' @examples
-#' calls <- callEnsemble(mods, X, Y)
+#' Get Best Calls Only
 #'
-parCallEnsemble <- function(X, path='data', geneids='symbol', numCores=2) {
-
-  data('subtype_caller_model')
-
-  if (path == 'data') {
-    data("ensemble_model")
-  } else {
-    load(path)
-  }
-
-  X <- geneMatch(X, geneids)
-  matchError <- res0$matchError
-  reportError(matchError)
-
-  cl <- makeForkCluster(numCores)
-
-  #eList <- lapply(ens, function(ei) callSubtypes(mods=ei, X=X))
-  eList <- parLapply(cl=cl, X=1:length(ens), fun=function(ei) callSubtypes(mods=ens[[ei]], X=X))
-
-  stopCluster(cl)
-
-  ePart <- lapply(eList, function(a) a[,3:8])
-  eStack <- array( unlist(ePart) , c(ncol(X), 6, length(ens)) )
-  eMeds  <- apply( eStack , 1:2 , median )
-  eMeds <- as.data.frame(eMeds)
-  colnames(eMeds) <- 1:6 # names(mods)
-
-  #bestCall <- apply(eMeds, 1, function(pi) colnames(eMeds)[which(pi == max(pi)[1])])
-  predCall <- predict(scaller, as.matrix(eMeds)) + 1
-
-  sampleIDs <- eList[[1]][,1]
-
-  res0 <- data.frame(SampleIDs=sampleIDs, BestCall=predCall, eMeds)
-  colnames(res0)[3:8] <- 1:6
-  return(res0)
+#' Extract just the best subtype calls from prediction results.
+#'
+#' @param results Data frame returned by \code{\link{callSubtypes}} or
+#'   \code{\link{callEnsemble}}.
+#'
+#' @return A character vector of subtype calls (1-6).
+#'
+#' @examples
+#' \dontrun{
+#' results <- callSubtypes(expr_matrix)
+#' calls <- getBestCalls(results)
+#' table(calls)
+#' }
+#'
+#' @export
+getBestCalls <- function(results) {
+  results$BestCall
 }
