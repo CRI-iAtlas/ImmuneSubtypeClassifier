@@ -43,7 +43,7 @@ geneMatch <- function(X, geneid = "pairs", sampleid = "SampleBarcode") {
 
   X <- as.data.frame(X)
 
-  modelgenes <- unique(as.vector(unlist(getDefaultPairList())))
+  modelgenes <- unique(as.vector(unlist(getFeaturesPairList())))
 
   data(ebpp_gene, envir = environment())
 
@@ -104,7 +104,7 @@ geneMatch <- function(X, geneid = "pairs", sampleid = "SampleBarcode") {
 #' @export
 geneMatchErrorReport <- function(X, geneid = "symbol") {
 
-  modelgenes <- unique(as.vector(unlist(getDefaultPairList())))
+  modelgenes <- unique(as.vector(unlist(getFeaturesPairList())))
 
   data(ebpp_gene, envir = environment())
 
