@@ -147,11 +147,11 @@ trainRobencla <- function(data,
 #'   character vector of 20 gene names representing 10 feature pairs.
 #'
 #' @examples
-#' pair_list <- getDefaultPairList()
+#' pair_list <- getFeaturesPairList()
 #' names(pair_list)
 #'
 #' @export
-getDefaultPairList <- function() {
+getFeaturesPairList <- function() {
   list(
     C1 = c("B2M", "COL3A1", "B2M", "COL1A2", "COL1A2", "HLA-B",
            "COL3A1", "HLA-B", "APOE", "COL6A3", "APOE", "SDC1",
@@ -181,6 +181,31 @@ getDefaultPairList <- function() {
 }
 
 
+
+#' Default Gene List for Immune Subtype Classification
+#'
+#' Returns the default named genes used for immune subtype classification.
+#'
+#' @return A named list with the 36 used genes.
+#'
+#' @examples
+#' gene_list <- getFeaturesGeneTable()
+#'
+#' @export
+getFeaturesGeneTable <- function() {
+  gs <- unique(unlist(getFeaturesPairList()))
+  data(ebpp_gene, envir = environment())
+  df <- ebpp_genes_full[ebpp_genes_full$Symbol %in% gs,]
+  # 2. Convert factors to characters (Modifying 'df')
+  cols_to_fix <- c("Symbol", "Entrez", "Ensembl")
+  df[cols_to_fix] <- lapply(df[cols_to_fix], as.character)
+  return(
+    df
+  )
+}
+
+
+
 #' Build and Save Robencla Classifier
 #'
 #' Convenience function to build a robencla classifier from a data file,
@@ -195,7 +220,7 @@ getDefaultPairList <- function() {
 #' @param sample_id Character string, column name containing sample IDs.
 #'   Default is "Barcode".
 #' @param pair_list Named list of feature pairs. If NULL, uses
-#'   \code{getDefaultPairList()}. Default is NULL.
+#'   \code{getFeaturesPairList()}. Default is NULL.
 #' @param label_prefix Character string to prepend to numeric labels.
 #'   Set to NULL to skip label transformation. Default is "C".
 #' @param evaluate Logical, whether to run self-evaluation on training data
@@ -224,7 +249,7 @@ build_robencla_classifier <- function(data_path,
                                       ...) {
 
   if (is.null(pair_list)) {
-    pair_list <- getDefaultPairList()
+    pair_list <- getFeaturesPairList()
   }
 
   message("Reading training data from: ", data_path)

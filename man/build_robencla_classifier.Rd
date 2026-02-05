@@ -28,7 +28,7 @@ Default is "Label".}
 Default is "Barcode".}
 
 \item{pair_list}{Named list of feature pairs. If NULL, uses
-\code{getDefaultPairList()}. Default is NULL.}
+\code{getFeaturesPairList()}. Default is NULL.}
 
 \item{label_prefix}{Character string to prepend to numeric labels.
 Set to NULL to skip label transformation. Default is "C".}
