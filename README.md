@@ -54,6 +54,7 @@ model <- readRDS('robencla_trained_model.rds')
 # Values should be normalized expression (e.g., FPKM, TPM, or normalized counts)
 expr_matrix <- read.csv("path/to/my_expression_data.csv", row.names = 1)
 
+<<<<<<< HEAD
 # 2.1 Subset your expr_matrix if needed.
 gene_table <- getFeaturesGeneTable()
 expr_matrix <- expr_matrix[gene_table$Symbol, ]
@@ -63,6 +64,13 @@ expr_matrix <- expr_matrix[gene_table$Symbol, ]
 # sampleid: the column containing sample IDs.
 results <- callSubtypes(expr_matrix, model = model, geneid = "symbol", sampleid = "SampleID")
 
+=======
+# 3. Run the classifier
+# geneid options: what are the genes named, "symbol", "entrez", "ensembl"
+# sampleid: the column containing sample IDs.
+results <- callSubtypes(expr_matrix, model = model, geneid = "symbol", sampleid = "SampleID")
+
+>>>>>>> 38800b8fd04aa6e56ca73ec70c07555f34bbd667
 # 3. View results
 head(results)
 
@@ -128,6 +136,7 @@ Ensure you have restarted your R session after installing updates. This is often
 
 ## License
 
-[Add your license here, e.g., MIT, GPL-3]
+This project is licensed under the terms of the MIT license.
+![License: MIT](https://img.shields.io)
 
 ```
