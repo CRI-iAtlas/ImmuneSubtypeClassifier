@@ -95,8 +95,6 @@ trainRobencla <- function(data,
                           combine_function = "median",
                           verbose = 0,
                           trim_model = TRUE) {
-  library(robencla)
-
 
   obj_name <- as.character(Sys.time())
 

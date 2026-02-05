@@ -209,8 +209,6 @@ callSubtypes <- function(X,
                          model_path = NULL,
                          geneid = "symbol",
                          sampleid = 'Barcode') {
-  library(data.table)
-  library(robencla)
   if (is.null(model)) {
     if (!is.null(model_path)) {
       model <- readRDS(model_path)
