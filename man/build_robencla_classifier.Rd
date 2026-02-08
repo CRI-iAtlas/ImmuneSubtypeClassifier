@@ -6,20 +6,26 @@
 \usage{
 build_robencla_classifier(
   data_path,
-  output_path,
+  test_path = NULL,
+  output_path = "model.rds",
   label_name = "Label",
   sample_id = "Barcode",
   pair_list = NULL,
+  param_list = NULL,
+  data_mode = c("namedpairs"),
   label_prefix = "C",
-  evaluate = TRUE,
-  ...
+  train_fraction = 1,
+  seed = 42,
+  evaluate = TRUE
 )
 }
 \arguments{
 \item{data_path}{Character string, path to the training data CSV file.}
 
+\item{test_path}{Character string, path to the testing data CSV file, can be NULL}
+
 \item{output_path}{Character string, path where the trained model will
-be saved as an .rda file.}
+be saved as an .rds file.}
 
 \item{label_name}{Character string, column name containing class labels.
 Default is "Label".}
@@ -30,28 +36,49 @@ Default is "Barcode".}
 \item{pair_list}{Named list of feature pairs. If NULL, uses
 \code{getFeaturesPairList()}. Default is NULL.}
 
+\item{param_list}{Named list of training parameters. See \code{trainRobencla}
+for details. Default is NULL (uses default parameters).}
+
+\item{data_mode}{List of data modalities to use. see gibbsdavidl/robencla}
+
 \item{label_prefix}{Character string to prepend to numeric labels.
 Set to NULL to skip label transformation. Default is "C".}
 
-\item{evaluate}{Logical, whether to run self-evaluation on training data
-and print metrics. Default is TRUE.}
+\item{train_fraction}{Numeric, proportion of data to use for training
+when splitting. Use 1.0 for no split. Default is 1.0.}
 
-\item{...}{Additional arguments passed to \code{trainRobencla()}.}
+\item{seed}{Integer, random seed for reproducible train/test splits.
+Default is 42.}
+
+\item{evaluate}{Logical, whether to run evaluation and print metrics.
+Default is TRUE.}
 }
 \value{
-The trained and trimmed Robencla model object (invisibly).
+The trained and trimmed Robencla model object (invisibly), along
+  with test_data if a split was performed.
 }
 \description{
 Convenience function to build a robencla classifier from a data file,
 evaluate performance, and save the trained model.
 }
 \examples{
-\dontrun
+\dontrun{
+# With custom parameters
+params <- list(
+  max_depth = 6,
+  eta = 0.1,
+  nrounds = 200,
+  ensemble_size = 21
+)
+
 model <- build_robencla_classifier(
   data_path = "data/EBpp_pancancer.csv.gz",
-  output_path = "models/robencla_trained_model.rda",
+  output_path = "models/robencla_trained_model.rds",
   label_name = "Label",
-  sample_id = "Barcode"
+  sample_id = "Barcode",
+  param_list = params,
+  train_fraction = 0.8
 )
+}
 
 }

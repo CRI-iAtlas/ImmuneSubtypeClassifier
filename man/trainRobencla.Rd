@@ -9,19 +9,8 @@ trainRobencla(
   label_name = "ClusterLabel",
   sample_id = "SampleBarcode",
   pair_list,
-  max_depth = 12,
-  eta = 0.3,
-  nrounds = 64,
-  early_stopping_rounds = 2,
-  nthreads = 4,
-  gamma = 0.2,
-  lambda = 1.2,
-  alpha = 0.2,
-  ensemble_size = 11,
-  sample_prop = 0.8,
-  feature_prop = 0.8,
-  subsample = 0.8,
-  combine_function = "median",
+  param_list = NULL,
+  data_mode = c("namedpairs"),
   verbose = 0,
   trim_model = TRUE
 )
@@ -40,40 +29,23 @@ sample identifiers. Default is "SampleBarcode".}
 and contains a character vector of feature names. Features are paired
 sequentially (1-2, 3-4, 5-6, ...) for named pair transformation.}
 
-\item{max_depth}{Integer, maximum tree depth. Higher values increase
-model complexity. Default is 12.}
-
-\item{eta}{Numeric, learning rate. Smaller values are more conservative.
-Default is 0.3.}
-
-\item{nrounds}{Integer, maximum number of boosting rounds. Default is 64.}
-
-\item{early_stopping_rounds}{Integer, training stops if performance
-doesn't improve for this many rounds. Default is 2.}
-
-\item{nthreads}{Integer, number of parallel threads. Default is 4.}
-
-\item{gamma}{Numeric, minimum loss reduction required to make a split.
-Higher values are more conservative. Default is 0.2.}
-
-\item{lambda}{Numeric, L2 regularization term on weights. Default is 1.2.}
-
-\item{alpha}{Numeric, L1 regularization term on weights. Default is 0.2.}
-
-\item{ensemble_size}{Integer, number of models in each class ensemble.
-Default is 11.}
-
-\item{sample_prop}{Numeric, proportion of samples used to train each
-ensemble member. Default is 0.8.}
-
-\item{feature_prop}{Numeric, proportion of features used to train each
-ensemble member. Default is 0.8.}
-
-\item{subsample}{Numeric, XGBoost subsample ratio of training instances.
-Default is 0.8.}
-
-\item{combine_function}{Character, method for combining ensemble
-predictions. Currently only "median" is supported. Default is "median".}
+\item{param_list}{A named list of training parameters. If NULL, uses defaults.
+Supported parameters:
+\itemize{
+  \item max_depth: Integer, maximum tree depth (default: 12)
+  \item eta: Numeric, learning rate (default: 0.3)
+  \item nrounds: Integer, maximum boosting rounds (default: 64)
+  \item early_stopping_rounds: Integer, early stopping patience (default: 2)
+  \item nthreads: Integer, parallel threads (default: 4)
+  \item gamma: Numeric, minimum loss reduction (default: 0.2)
+  \item lambda: Numeric, L2 regularization (default: 1.2)
+  \item alpha: Numeric, L1 regularization (default: 0.2)
+  \item ensemble_size: Integer, number of ensemble models (default: 11)
+  \item sample_prop: Numeric, sample proportion per model (default: 0.8)
+  \item feature_prop: Numeric, feature proportion per model (default: 0.8)
+  \item subsample: Numeric, XGBoost subsample ratio (default: 0.8)
+  \item combine_function: Character, ensemble combination method (default: "median")
+}}
 
 \item{verbose}{Integer, verbosity level. 0 for silent. Default is 0.}
 
@@ -103,12 +75,21 @@ pair_list <- list(
   C2 = c("GeneE", "GeneF", "GeneG", "GeneH")
 )
 
+# Custom parameters
+params <- list(
+  max_depth = 6,
+  eta = 0.1,
+  nrounds = 200,
+  ensemble_size = 21
+)
+
 # Train the classifier
 model <- trainRobencla(
   data = training_data,
   label_name = "Label",
   sample_id = "Barcode",
-  pair_list = pair_list
+  pair_list = pair_list,
+  param_list = params
 )
 
 # Make predictions

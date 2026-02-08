@@ -208,7 +208,8 @@ callSubtypes <- function(X,
                          model = NULL,
                          model_path = NULL,
                          geneid = "symbol",
-                         sampleid = 'Barcode') {
+                         sampleid = 'Barcode',
+                         labelid=NULL) {
   if (is.null(model)) {
     if (!is.null(model_path)) {
       model <- readRDS(model_path)
@@ -245,7 +246,7 @@ callSubtypes <- function(X,
   print("Starting prediction")
   model$predict(
     data_frame = X,
-    label_name = NULL,
+    label_name = labelid,
     sample_id = sampleid
   )
   print("finshed prediction")
