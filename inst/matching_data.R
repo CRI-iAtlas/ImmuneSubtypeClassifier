@@ -29,12 +29,12 @@ shared_genes <- setdiff(shared_genes, c("Barcode", "Label", "SampleID", "sample"
 
 cat("Shared genes:", length(shared_genes), "\n\n")
 
-# Handle IGJ -> IGJP1 mapping if needed
-if ("IGJP1" %in% colnames(xena_orig) && !("IGJ" %in% colnames(xena_orig)) && "IGJ" %in% colnames(ebpp_orig)) {
-  colnames(xena_orig)[colnames(xena_orig) == "IGJP1"] <- "IGJ"
-  shared_genes <- c(shared_genes, "IGJ")
-  cat("Renamed IGJP1 to IGJ in Xena\n")
-}
+# # Handle IGJ -> IGJP1 mapping if needed
+# if ("IGJP1" %in% colnames(xena_orig) && !("IGJ" %in% colnames(xena_orig)) && "IGJ" %in% colnames(ebpp_orig)) {
+#   colnames(xena_orig)[colnames(xena_orig) == "IGJP1"] <- "IGJ"
+#   shared_genes <- c(shared_genes, "IGJ")
+#   cat("Renamed IGJP1 to IGJ in Xena\n")
+# }
 
 # Subset to shared barcodes and genes, PRESERVING ORDER BY BARCODE
 xena_matched <- as.data.table(xena_orig[xena_orig$Barcode %in% shared_barcodes, ])
@@ -68,6 +68,13 @@ ebpp_clean_matched <- ebpp_clean_matched[, ..final_cols]
 cat("Final matched dimensions:\n")
 cat("EBPP:", nrow(ebpp_clean_matched), "x", ncol(ebpp_clean_matched), "\n")
 cat("Xena:", nrow(xena_clean_matched), "x", ncol(xena_clean_matched), "\n\n")
+
+# Log-transform EBPP gene columns ONLY
+# Xena pipeline: log2(TPM + 0.001)
+cat("\nApplying log2(TPM + 0.001) transformation to EBPP...\n")
+for (gene in shared_genes) {
+  ebpp_clean_matched[[gene]] <- log2(ebpp_clean_matched[[gene]] + 0.001)
+}
 
 # Save properly matched datasets
 fwrite(ebpp_clean_matched, '../data/formatted_full_L1000/EBpp_pancancer_matched.csv.gz')

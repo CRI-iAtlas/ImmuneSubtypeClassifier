@@ -1,6 +1,67 @@
 
 
 
+
+
+#' Edit a pair_list, remove pairs containing identified items.
+#'
+#' Return the cleaned pair_list.
+#'
+#' @param pair_list Vector or named list of vectors. Pairs ordered as (1,2), (3,4), (5,6), etc.
+#' @param items_to_remove Vector of items; pairs containing any of these will be removed.
+#'
+#' @return new_pair_list Same structure as input (vector or list) with pairs removed.
+#'
+#' @keywords internal
+editPairList <- function(pair_list, items_to_remove) {
+
+  # Handle vector input
+  if (is.vector(pair_list) && !is.list(pair_list)) {
+    # Check even length
+    if (length(pair_list) %% 2 != 0) {
+      stop("pair_list vector must have even length")
+    }
+
+    # Create pair indices
+    pair_idx <- seq(1, length(pair_list), by = 2)
+
+    # Check which pairs contain items to remove
+    keep <- vapply(pair_idx, function(i) {
+      !any(pair_list[i] %in% items_to_remove) &&
+        !any(pair_list[i + 1] %in% items_to_remove)
+    }, logical(1))
+
+    # Extract kept pairs
+    kept_indices <- sort(c(pair_idx[keep], pair_idx[keep] + 1))
+    return(pair_list[kept_indices])
+  }
+
+  # Handle list input
+  if (is.list(pair_list)) {
+    new_list <- lapply(pair_list, function(vec) {
+      if (length(vec) %% 2 != 0) {
+        warning("Skipping list element with odd length")
+        return(vec)
+      }
+
+      pair_idx <- seq(1, length(vec), by = 2)
+
+      keep <- vapply(pair_idx, function(i) {
+        !any(vec[i] %in% items_to_remove) &&
+          !any(vec[i + 1] %in% items_to_remove)
+      }, logical(1))
+
+      kept_indices <- sort(c(pair_idx[keep], pair_idx[keep] + 1))
+      vec[kept_indices]
+    })
+
+    return(new_list)
+  }
+
+  stop("pair_list must be a vector or list of vectors")
+}
+
+
 #' Default Feature Pair List for Immune Subtype Classification
 #'
 #' Returns the default named pair list used for immune subtype classification.

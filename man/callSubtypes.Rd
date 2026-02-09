@@ -9,7 +9,8 @@ callSubtypes(
   model = NULL,
   model_path = NULL,
   geneid = "symbol",
-  sampleid = "Barcode"
+  sampleid = "Barcode",
+  labelid = NULL
 )
 }
 \arguments{
@@ -26,6 +27,9 @@ path is desired. Default is NULL (uses built-in model).}
 
 \item{geneid}{Character string specifying the gene ID type in row names.
 One of "symbol", "entrez", "ensembl", or "pairs". Default is "symbol".}
+
+\item{labelid}{Character string specifying the sample labels.
+If present, then prediction metrics can be computed with model$pred}
 }
 \value{
 A data frame with columns:

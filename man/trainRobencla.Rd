@@ -9,6 +9,7 @@ trainRobencla(
   label_name = "ClusterLabel",
   sample_id = "SampleBarcode",
   pair_list,
+  sig_list = NULL,
   param_list = NULL,
   data_mode = c("namedpairs"),
   verbose = 0,
@@ -28,6 +29,9 @@ sample identifiers. Default is "SampleBarcode".}
 \item{pair_list}{A named list where each element corresponds to a class
 and contains a character vector of feature names. Features are paired
 sequentially (1-2, 3-4, 5-6, ...) for named pair transformation.}
+
+\item{sig_list}{List of signatures, named list of genes that belong to a
+signature.  The signatures will be used to compute P(sig_a__g_i > sig_b__g_j)}
 
 \item{param_list}{A named list of training parameters. If NULL, uses defaults.
 Supported parameters:

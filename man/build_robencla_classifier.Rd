@@ -11,6 +11,7 @@ build_robencla_classifier(
   label_name = "Label",
   sample_id = "Barcode",
   pair_list = NULL,
+  sig_list = NULL,
   param_list = NULL,
   data_mode = c("namedpairs"),
   label_prefix = "C",
@@ -35,6 +36,9 @@ Default is "Barcode".}
 
 \item{pair_list}{Named list of feature pairs. If NULL, uses
 \code{getFeaturesPairList()}. Default is NULL.}
+
+\item{sig_list}{List of signatures, named list of genes that belong to a
+signature.  The signatures will be used to compute P(sig_a__g_i > sig_b__g_j)}
 
 \item{param_list}{Named list of training parameters. See \code{trainRobencla}
 for details. Default is NULL (uses default parameters).}

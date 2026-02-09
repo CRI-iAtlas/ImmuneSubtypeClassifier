@@ -4,7 +4,15 @@
 \alias{geneMatch}
 \title{Match Gene IDs to Model Features}
 \usage{
-geneMatch(X, geneid = "pairs", sampleid = "SampleBarcode")
+geneMatch(
+  X,
+  model,
+  model_path,
+  geneid = "symbol",
+  sampleid = "SampleBarcode",
+  labelid = "Label",
+  error_limit = 0
+)
 }
 \arguments{
 \item{X}{Gene expression matrix with genes in rows and samples in columns.}
@@ -23,6 +31,7 @@ A list containing:
     Missing genes appear as NA rows.}
   \item{matchError}{Numeric, proportion of model genes not found in input
     (0 = perfect match, 1 = no genes matched).}
+  \item{missingGenes}{Genes needed by the model, but not found in the gene_map or expression matrix.}
 }
 \description{
 Match the incoming data gene identifiers to the features used in training.

@@ -3,7 +3,6 @@
 export(build_robencla_classifier)
 export(callSubtypes)
 export(geneMatch)
-export(geneMatchErrorReport)
 export(getBestCalls)
 export(getFeaturesGeneTable)
 export(getFeaturesPairList)
