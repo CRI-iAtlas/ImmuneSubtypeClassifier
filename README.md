@@ -122,10 +122,6 @@ The classifier assigns one of six immune subtypes:
 This means you are trying to load the model with a newer version of XGBoost (>= 2.0) than was used to train it.
 **Fix:** Downgrade XGBoost to 1.7.8.1 or re-train the model using `build_robencla_classifier`.
 
-### Error: `invalid subscript type 'list'`
-
-Ensure you have restarted your R session after installing updates. This is often caused by a stale `Robencla` class definition in memory.
-
 ## License
 
 This project is licensed under the terms of the MIT license.
