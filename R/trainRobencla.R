@@ -12,7 +12,13 @@
 #'
 #' @return new_pair_list Same structure as input (vector or list) with pairs removed.
 #'
+#' @examples
+#' \dontrun{
+#'   new_list <- editPairList(pair_list, 'IGJ')
+#' }
+#'
 #' @keywords internal
+#' @export
 editPairList <- function(pair_list, items_to_remove) {
 
   # Handle vector input

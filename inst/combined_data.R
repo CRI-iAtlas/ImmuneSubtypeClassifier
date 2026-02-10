@@ -11,12 +11,19 @@ library(ImmuneSubtypeClassifier)
 # STEP 1: Load cleaned datasets
 # ============================================================================
 
-ebpp_clean <- fread('../data/formatted_full_L1000/EBpp_pancancer_matched.csv.gz')
-xena_clean <- fread('../data/formatted_full_L1000/xena_rsem_tpm_matched.csv.gz')
+ebpp_orig <- fread('../data/formatted_full_L1000/EBpp_pancancer.csv.gz')
+xena_orig <- fread('../data/formatted_full_L1000/xena_rsem_tpm.csv.gz')
 
 cat("Loaded cleaned datasets:\n")
-cat("EBPP:", nrow(ebpp_clean), "x", ncol(ebpp_clean), "\n")
-cat("Xena:", nrow(xena_clean), "x", ncol(xena_clean), "\n\n")
+cat("EBPP:", nrow(ebpp_orig), "x", ncol(ebpp_orig), "\n")
+cat("Xena:", nrow(xena_orig), "x", ncol(xena_orig), "\n\n")
+
+shared_genes <- intersect(colnames(xena_orig), colnames(ebpp_orig))
+#shared_genes <- setdiff(shared_genes, c("Barcode", "Label", "SampleID", "sample"))
+cat("Shared genes:", length(shared_genes), "\n\n")
+
+ebpp_clean <- ebpp_orig[, ..shared_genes]
+xena_clean <- xena_orig[, ..shared_genes]
 
 # Verify columns match
 if (!all(colnames(ebpp_clean) == colnames(xena_clean))) {
@@ -58,21 +65,21 @@ for (g in xena_sample_genes) {
               max(xena_clean[[g]], na.rm=TRUE)))
 }
 
-# Done in matching code
-# # Log-transform EBPP gene columns ONLY
-# # Xena pipeline: log2(TPM + 0.001)
-# cat("\nApplying log2(TPM + 0.001) transformation to EBPP...\n")
-# for (gene in gene_cols) {
-#   ebpp_clean[[gene]] <- log2(ebpp_clean[[gene]] + 0.001)
-# }
-#
-# cat("\nAfter log2(x + 0.001) transformation:\n")
-# cat("EBPP sample genes:\n")
-# for (g in ebpp_sample_genes) {
-#   cat(sprintf("  %s: [%.2f, %.2f]\n", g,
-#               min(ebpp_clean[[g]], na.rm=TRUE),
-#               max(ebpp_clean[[g]], na.rm=TRUE)))
-# }
+#Done in matching code
+# Log-transform EBPP gene columns ONLY
+# Xena pipeline: log2(TPM + 0.001)
+cat("\nApplying log2(TPM + 0.001) transformation to EBPP...\n")
+for (gene in gene_cols) {
+  ebpp_clean[[gene]] <- log2(ebpp_clean[[gene]] + 0.001)
+}
+
+cat("\nAfter log2(x + 0.001) transformation:\n")
+cat("EBPP sample genes:\n")
+for (g in ebpp_sample_genes) {
+  cat(sprintf("  %s: [%.2f, %.2f]\n", g,
+              min(ebpp_clean[[g]], na.rm=TRUE),
+              max(ebpp_clean[[g]], na.rm=TRUE)))
+}
 
 # Verify metadata columns were NOT transformed
 cat("\nMetadata verification:\n")
@@ -145,8 +152,10 @@ cat("Final metadata columns in training set:\n")
 cat("  ", paste(final_metadata, collapse=", "), "\n\n")
 
 # Save training set, test set,
-fwrite(train_combined, '../data/formatted_full_L1000/train_stratified.csv.gz')
-fwrite(xena_test, '../data/formatted_full_L1000test_xena_holdout.csv.gz')
+fwrite(train_combined, '../data/formatted_full_L1000/training/train_stratified.csv.gz')
+fwrite(xena_test, '../data/formatted_full_L1000/training/test_xena_holdout.csv.gz')
+fwrite(ebpp_clean, '../data/formatted_full_L1000/training/EBpp_pancancer_cleaned.csv.gz')
+fwrite(xena_clean, '../data/formatted_full_L1000/training/xena_rsem_tpm_cleaned.csv.gz')
 
 rm(ebpp_clean, xena_clean, xena_train, xena_shuffled)
 
@@ -358,15 +367,17 @@ cat("Pairs should be robust across both pipelines!\n")
 # STEP 9: RUN IT
 # ============================================================================
 
+library(ImmuneSubtypeClassifier)
+
 # Conservative parameters for better C4/C6
 conservative_params <- list(
   max_depth = 8,
-  eta = 0.3,
+  eta = 0.2,
   nrounds = 64,
   early_stopping_rounds = 4,
-  gamma = 0.2,
-  lambda = 1.8,
-  alpha = 0.2,
+  gamma = 0.3,
+  lambda = 1.9,
+  alpha = 0.3,
   ensemble_size = 11,
   sample_prop = 0.8,
   feature_prop = 0.8,
@@ -374,21 +385,22 @@ conservative_params <- list(
 )
 
 stratified_pair_list <- readRDS('../models/pair_list_stratified.rds')
+stratified_pair_list[stratified_pair_list == 'STAT1_1'] <- 'STAT1'
 this_set <- editPairList(stratified_pair_list, 'IGJ')
-#this_set <- stratified_pair_list[1:64]
+this_set <- this_set
 
 # Now use the cleaned pair_list
 result <- build_robencla_classifier(
-  data_path='../data/formatted_full_L1000/train_stratified.csv.gz',
-  test_path='../data/formatted_full_L1000test_xena_holdout.csv.gz',
-  output_path = '../models/immune_optimized_pairs_64.rds',
+  data_path='../data/formatted_full_L1000/training/train_stratified.csv.gz',
+  test_path='../data/formatted_full_L1000/training/test_xena_holdout.csv.gz',
+  output_path = '../models/immune_optimized_99_pairs.rds',
   pair_list = this_set,
   sig_list = NULL,
   param_list = conservative_params,
   data_mode = c("namedpairs"),
   train_fraction = NULL,
   seed = 412,
-  sample_id = "SampleID"  # Specify the sample ID column
+  sample_id = "Barcode"  # Specify the sample ID column
 )
 
 
@@ -396,6 +408,9 @@ result <- build_robencla_classifier(
 # STEP 10: Train with only EBpp, but the combined pair_list
 # ============================================================================
 
+
+library(ImmuneSubtypeClassifier)
+
 # Conservative parameters for better C4/C6
 conservative_params <- list(
   max_depth = 8,
@@ -412,15 +427,17 @@ conservative_params <- list(
 )
 
 stratified_pair_list <- readRDS('../models/pair_list_stratified.rds')
-this_set <- stratified_pair_list[1:64]
+idx <- which(stratified_pair_list == 'STAT1_1')
+stratified_pair_list[idx] <- 'STAT1'
 
+this_set <- stratified_pair_list #[1:64]
 new_list <- editPairList(this_set, 'IGJ')
 
 # Now use the cleaned pair_list
 result <- build_robencla_classifier(
-  data_path='../data/formatted_full_L1000/EBpp_pancancer_matched.csv.gz',
-  test_path=NULL, #'../data/formatted_full_L1000/xena_rsem_tpm.csv.gz',
-  output_path = '../models/immune_optimized_pairs_100.rds',
+  data_path='../data/formatted_full_L1000/training/EBpp_pancancer_cleaned.csv.gz',
+  test_path=NULL,
+  output_path = '../models/immune_optimized_99_pairs.rds',
   pair_list = new_list,
   sig_list = NULL,
   param_list = conservative_params,
@@ -430,64 +447,32 @@ result <- build_robencla_classifier(
   sample_id = "Barcode"  # Specify the sample ID column
 )
 
+
+
 library(ImmuneSubtypeClassifier)
-Xs <- readr::read_csv('../data/formatted_full_L1000/xena_rsem_tpm.csv.gz')
-result <- callSubtypes(Xs,
-                       model = NULL,
-                       model_path = '../models/immune_optimized_pairs_100.rds',
-                       geneid = "symbol",
-                       sampleid = 'Barcode',
-                       labelid='Label')
 
-library(caret)
+# get the list of genes used for the model
+model_genes <- modelGenes(model_path='../models/immune_optimized_99_pairs.rds')
+length(model_genes$model_genes) == nrow(model_genes$gene_map)
 
-# Create confusion matrix object
-cm <- confusionMatrix(
-  factor(result$BestCall, levels = 1:6),
-  factor(result$Label, levels = 1:6)
-)
+res0 <- callSubtypes('../data/formatted_full_L1000/training/xena_rsem_tpm_cleaned.csv.gz',
+                    model = NULL,  # genes in columns and samples in rows.
+                    model_path = '../models/immune_optimized_99_pairs.rds',
+                    geneid =   "symbol",  # how are the gene IDs encoded
+                    sampleid = 'Barcode', # column name with sample IDs
+                    labelid=  'Label')    # column name with sample Labels (optional)
 
-# Get key metrics
-cm$overall  # Overall accuracy, Kappa, etc.
-cm$byClass  # Per-class metrics
+# get the trained model.
+model <- res0$Model
 
-# Manual calculations:
-conf_table <- table(result$Label, result$BestCall)
+# get the results table
+pred  <- res0$Pred
 
-# 1. Overall Accuracy
-accuracy <- sum(diag(conf_table)) / sum(conf_table)
-# (1638 + 2371 + 2022 + 856 + 329 + 61) / total ≈ 0.88
+# confusion matrix
+table(pred$BestCall, pred$Label)
 
-# 2. Per-class metrics
-per_class <- sapply(1:6, function(i) {
-  TP <- conf_table[i, i]
-  FP <- sum(conf_table[, i]) - TP
-  FN <- sum(conf_table[i, ]) - TP
-  TN <- sum(conf_table) - TP - FP - FN
+# get class prediction metrics.
+model$classification_metrics(labels = pred$Label, calls = pred$BestCall)
 
-  precision <- TP / (TP + FP)
-  recall <- TP / (TP + FN)  # sensitivity
-  f1 <- 2 * (precision * recall) / (precision + recall)
 
-  c(Precision = precision, Recall = recall, F1 = f1)
-})
-colnames(per_class) <- paste0("Class", 1:6)
-t(per_class)
 
-# 3. Macro-averaged F1 (unweighted mean across classes)
-macro_f1 <- mean(per_class["F1", ])
-
-# 4. Weighted F1 (weighted by class size)
-class_sizes <- rowSums(conf_table)
-weighted_f1 <- sum(per_class["F1", ] * class_sizes) / sum(class_sizes)
-
-# 5. Cohen's Kappa (accounts for chance agreement)
-kappa <- cm$overall["Kappa"]
-
-# Quick summary
-list(
-  Accuracy = accuracy,
-  Macro_F1 = macro_f1,
-  Weighted_F1 = weighted_f1,
-  Kappa = kappa
-)

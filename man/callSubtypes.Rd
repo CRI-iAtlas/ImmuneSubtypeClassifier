@@ -5,7 +5,7 @@
 \title{Call Immune Subtypes Using Robencla Model}
 \usage{
 callSubtypes(
-  X,
+  X_or_path = NULL,
   model = NULL,
   model_path = NULL,
   geneid = "symbol",
@@ -14,7 +14,7 @@ callSubtypes(
 )
 }
 \arguments{
-\item{X}{Gene expression matrix with genes in rows and samples in columns.
+\item{X_or_path}{Gene expression matrix (or path) with genes in rows and samples in columns.
 Row names should be gene identifiers matching the \code{geneid} parameter.
 Column names should be sample identifiers.}
 

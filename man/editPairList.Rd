@@ -17,4 +17,10 @@ new_pair_list Same structure as input (vector or list) with pairs removed.
 \description{
 Return the cleaned pair_list.
 }
+\examples{
+\dontrun{
+  new_list <- editPairList(pair_list, 'IGJ')
+}
+
+}
 \keyword{internal}

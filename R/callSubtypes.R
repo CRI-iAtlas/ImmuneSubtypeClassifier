@@ -6,6 +6,74 @@ NULL
 
 
 
+#' Get a list of genes that are used in the model.
+#' @param model A trained robencla model object. If NULL (default), loads
+#'   the package's built-in model.
+#' @param model_path Character string, path to a saved robencla model file
+#'   (.rda format). Used only if \code{model} is NULL and a custom model
+#'   path is desired. Default is NULL (uses built-in model).
+#' @param geneid Character string specifying the gene ID type in row names.
+#'   One of "symbol", "entrez", "ensembl", or "pairs". Default is "symbol".
+#'
+#' @return A list containing:
+#'   \item{model_genes}{List of the genes from the model object.}
+#'   \item{gene_mape}{data.frame, TCGA PanCancer EB++ genes that match the model_genes.}
+#'
+#' @details
+#' The function loads the \code{ebpp_genes_sig} reference data containing
+#' the gene identifiers used during model training. Model genes are matched
+#' to this reference, and gene table is returned..
+#'
+#' @examples
+#' \dontrun{
+#' # Match by gene symbol
+#' result <- modelGenes(model=NULL, model_path='immune_optimized_99_pairs.rds')
+#' gene_list <- result$model_genes
+#' matching_gene_table <- result$gene_map
+#' }
+#'
+#' @export
+modelGenes <- function(model=NULL, model_path=NULL, geneid='symbol') {
+
+  # get the required genes from the model
+  if (!is.null(model)) {
+    model_genes <- model$pair_list
+  } else if (!is.null(model_path)) {
+    model <- readRDS(model_path)
+    # get the model genes out
+    model_genes <- model$pair_list
+  } else {
+    print("Error: geneMatch ... Please include a model!")
+    return(NULL)
+  }
+
+  # unlist and unique
+  model_genes <- unique(as.vector(unlist(model_genes)))
+
+  # get the EBpp gene table
+  data(ebpp_gene, envir = environment())
+
+  # get the gene map for these genes
+  # get the gene map for these genes
+  if(geneid == 'symbol') {
+    gene_map <- ebpp_genes_full[ebpp_genes_full$Symbol %in% model_genes, ]
+  } else if (geneid == 'entrez') {
+    gene_map <- ebpp_genes_full[ebpp_genes_full$Entrez %in% model_genes, ]
+  } else if (geneid == 'ensembl') {
+    gene_map <- ebpp_genes_full[ebpp_genes_full$Ensembl %in% model_genes, ]
+  } else {
+    stop("For geneid, please use: symbol, entrez, ensembl, or pairs")
+  }
+
+  if(nrow(gene_map) < length(model_genes)) {
+    print("****** WARNING ******")
+    print("Number of genes in model doesn't match number in map.")
+  }
+
+  return(list(model_genes=model_genes, gene_map=gene_map))
+}
+
+
 
 #' Print Gene Match Error Report
 #'
@@ -92,7 +160,15 @@ geneMatch <- function(X,
   data(ebpp_gene, envir = environment())
 
   # get the gene map for these genes
-  gene_map <- ebpp_genes_full[ebpp_genes_full$Symbol %in% modelgenes, ]
+  if(geneid == 'symbol') {
+    gene_map <- ebpp_genes_full[ebpp_genes_full$Symbol %in% modelgenes, ]
+  } else if (geneid == 'entrez') {
+    gene_map <- ebpp_genes_full[ebpp_genes_full$Entrez %in% modelgenes, ]
+  } else if (geneid == 'ensembl') {
+    gene_map <- ebpp_genes_full[ebpp_genes_full$Ensembl %in% modelgenes, ]
+  } else {
+    stop("For geneid, please use: symbol, entrez, ensembl, or pairs")
+  }
 
   if (geneid == "symbol") {
     idx <- match(x = gene_map$Symbol, table = colnames(X))
@@ -150,7 +226,7 @@ geneMatch <- function(X,
 #' @import data.table
 #' @import robencla
 #'
-#' @param X Gene expression matrix with genes in rows and samples in columns.
+#' @param X_or_path Gene expression matrix (or path) with genes in rows and samples in columns.
 #'   Row names should be gene identifiers matching the \code{geneid} parameter.
 #'   Column names should be sample identifiers.
 #' @param model A trained robencla model object. If NULL (default), loads
@@ -193,7 +269,7 @@ geneMatch <- function(X,
 #' }
 #'
 #' @export
-callSubtypes <- function(X,
+callSubtypes <- function(X_or_path=NULL,
                          model = NULL,
                          model_path = NULL,
                          geneid = "symbol",
@@ -226,6 +302,12 @@ callSubtypes <- function(X,
     }
   }
 
+  if(typeof(X_or_path) == 'character') {
+    X <- readr::read_csv(X_or_path)
+  } else {
+    X <- X_or_path
+  }
+
   # check that all needed genes are available
   res0 <- geneMatch(X, model, model_path,
                     geneid=geneid, sampleid=sampleid, labelid=labelid)
@@ -245,7 +327,7 @@ callSubtypes <- function(X,
   output <- data.frame(
     SampleIDs = results$SampleID,
     BestCall = as.integer(gsub("C", "", results$BestCall)),
-    Label = as.integer(gsub("C", "", results$Label)),
+    Label = if(!is.null(labelid)){as.integer(gsub("C", "", results$Label))} else { NA },
     stringsAsFactors = FALSE
   )
 
@@ -258,7 +340,7 @@ callSubtypes <- function(X,
     output <- cbind(output, scores)
   }
 
-  return(output)
+  return(list(Model=model, Pred=output))
 }
 
 #' Get Prediction Scores Only
