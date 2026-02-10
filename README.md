@@ -43,29 +43,36 @@ columns `Symbol`, `Entrez`, and `Ensembl`.
 The main function `callSubtypes()` handles gene matching, data transformation, and prediction.
 
 ```r
+
 library(ImmuneSubtypeClassifier)
 
-# 1. Load the model
-# contact me for the model or data #
-# see: code/trainRobencla.R
-model <- readRDS('robencla_trained_model.rds')  
+# Get the list of feature-pair genes used for the model.
+# ...there's model_genes_list$model_genes and model_genes_list$gene_map
+model_genes_list <- modelGenes(model_path='../models/immune_optimized_99_pairs.rds')
 
-# 2. Load your gene expression data
-# Format: Rows = Genes, Columns = Samples
-# Values should be normalized expression (e.g., FPKM, TPM, or normalized counts)
-expr_matrix <- read.csv("path/to/my_expression_data.csv", row.names = 1)
+# Confirm the gene_map contains all genes.
+length(model_genes$model_genes) == nrow(model_genes$gene_map)
 
-# 2.1 Subset your expr_matrix if needed.
-gene_table <- getFeaturesGeneTable()
-expr_matrix <- expr_matrix[gene_table$Symbol, ]
+# Call the subtypes, can also pass in a data.frame / tibble etc.
+result <- callSubtypes(X_or_path = '../data/gene_expression_rsem_tpm.csv.gz',
+                     model = NULL,  # genes in columns and samples in rows.
+                     model_path = '../models/immune_optimized_99_pairs.rds',
+                     geneid =   "symbol",  # how are the gene IDs encoded
+                     sampleid = 'Barcode', # column name with sample IDs
+                     labelid=  'Label')    # column name with sample Labels (optional)
 
-# 3. Run the classifier
-# geneid options: what are the genes named, "symbol", "entrez", "ensembl"
-# sampleid: the column containing sample IDs.
-results <- callSubtypes(expr_matrix, model = model, geneid = "symbol", sampleid = "SampleID")
+# get the trained robencla model.
+model <- result$Model
 
-# 4. View results
-head(results)
+# get the results table, $BestCall is the predicted subtype
+pred  <- result$Pred
+
+# confusion matrix
+table(pred$BestCall, pred$Label)
+
+# get class prediction metrics.
+model$classification_metrics(labels = pred$Label, calls = pred$BestCall)
+
 
 ```
 
