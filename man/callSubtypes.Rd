@@ -2,24 +2,67 @@
 % Please edit documentation in R/callSubtypes.R
 \name{callSubtypes}
 \alias{callSubtypes}
-\title{callSubtypes
-Make subtype calls for each sample}
+\title{Call Immune Subtypes Using Robencla Model}
 \usage{
-callSubtypes(mods, X)
+callSubtypes(
+  X_or_path = NULL,
+  model = NULL,
+  model_path = NULL,
+  geneid = "symbol",
+  sampleid = "Barcode",
+  labelid = NULL
+)
 }
 \arguments{
-\item{mods}{xgboost model list}
+\item{X_or_path}{Gene expression matrix (or path) with genes in rows and samples in columns.
+Row names should be gene identifiers matching the \code{geneid} parameter.
+Column names should be sample identifiers.}
 
-\item{X}{gene expression matrix, genes in rows, samples in columns}
+\item{model}{A trained robencla model object. If NULL (default), loads
+the package's built-in model.}
+
+\item{model_path}{Character string, path to a saved robencla model file
+(.rda format). Used only if \code{model} is NULL and a custom model
+path is desired. Default is NULL (uses built-in model).}
+
+\item{geneid}{Character string specifying the gene ID type in row names.
+One of "symbol", "entrez", "ensembl", or "pairs". Default is "symbol".}
+
+\item{labelid}{Character string specifying the sample labels.
+If present, then prediction metrics can be computed with model$pred}
 }
 \value{
-table, column 1 is best call, remaining columns are subtype prediction scores.
+A data frame with columns:
+  \item{SampleIDs}{Sample identifiers from input column names.}
+  \item{BestCall}{Predicted subtype (1-6).}
+  \item{1-6}{Prediction scores for each subtype.}
 }
 \description{
-callSubtypes
-Make subtype calls for each sample
+Make immune subtype predictions for samples using a trained robencla
+ensemble classifier.
+}
+\details{
+This function wraps the robencla model's predict method to provide a
+simple interface for immune subtype classification. It handles gene
+matching, data transformation, and reformats the output to match the
+legacy interface.
+
+The robencla model uses named feature pairs and an ensemble of XGBoost
+classifiers to make predictions. Each sample receives a score for each
+of the 6 immune subtypes, and the BestCall is determined by the model's
+final prediction layer.
 }
 \examples{
-calls <- callSubtypes(mods, X)
+\dontrun{
+# Using default built-in model
+results <- callSubtypes(expr_matrix, geneid = "symbol")
+
+# Using a custom model
+my_model <- readRDS("path/to/model.rds")
+results <- callSubtypes(expr_matrix, model = my_model, geneid = "symbol")
+
+# View results
+table(results$BestCall)
+}
 
 }
