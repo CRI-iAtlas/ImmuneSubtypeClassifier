@@ -26,6 +26,7 @@ You can install the development version of ImmuneSubtypeClassifier from GitHub:
 if (!requireNamespace("devtools", quietly = TRUE))
     install.packages("devtools")
 
+devtools::install_github("gibbsdavidl/robencla")
 devtools::install_github("gibbsdavidl/ImmuneSubtypeClassifier")
 
 ```
