@@ -99,16 +99,44 @@ If you have a labeled training set and wish to rebuild the model (e.g., after up
 * Must contain a **Label** column (e.g., "C1", "C2") and a **Sample ID** column.
 
 ```r
+
 library(ImmuneSubtypeClassifier)
 
-# Build and save a new model
-# This effectively "re-serializes" the model to your current xgboost version
-build_robencla_classifier(
-  data_path = "inst/extdata/training_data.csv",  # Path to your training CSV
-  output_path = "model/robencla_trained_model.rds", # Where to save the model
-  label_name = "ClusterLabel",                     # Column name for subtypes
-  sample_id = "SampleBarcode"                      # Column name for sample IDs
+# Conservative parameters, see robencla & xgboost for parameters 
+conservative_params <- list(
+  max_depth = 8,
+  eta = 0.2,
+  nrounds = 64,
+  early_stopping_rounds = 4,
+  gamma = 0.3,
+  lambda = 1.9,
+  alpha = 0.3,
+  ensemble_size = 11,
+  sample_prop = 0.8,
+  feature_prop = 0.8,
+  subsample = 0.8
 )
+
+# then load up a list of gene pairs...
+pair_list <- readRDS('../models/pair_list_stratified.rds')
+# if there's a gene you want to try removing
+this_set <- editPairList(pair_list, 'IGJ')
+
+# Now use the cleaned pair_list
+result <- build_robencla_classifier(
+  data_path='../data/training_expression_data.csv.gz',
+  test_path='../data/testing_expression_data.csv.gz',
+  output_path = '../models/immune_optimized_99_pairs.rds',
+  pair_list = this_set,
+  sig_list = NULL,
+  param_list = conservative_params,
+  data_mode = c("namedpairs"),
+  train_fraction = NULL,  # used if test_path is NULL
+  seed = 412,
+  sample_id = "Barcode"  # Specify the sample ID column
+)
+
+
 
 ```
 
