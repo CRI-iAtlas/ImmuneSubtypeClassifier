@@ -33,12 +33,16 @@ devtools::install_github("gibbsdavidl/ImmuneSubtypeClassifier")
 
 ## Quick Start: Predicting Subtypes
 
-The function `getFeaturesPairList()` returns a named list, C1-C6, where feature pairs
-are defined.  Pairs are (1,2), (3,4), (5,6), etc. for each cluster label.
+Data format: Genes must be in columns, samples are in rows, and there should be a column of sample IDs.
+
+Make sure you have all the expected genes by using the getFeaturesPairList or getFeaturesGeneTable functions.
 
 The function `getFeaturesGeneTable()` returns the gene ID table used with the 
 TCGA PanCancer EB++ expression training data (hg19).  Use this function to subset your data with 
 columns `Symbol`, `Entrez`, and `Ensembl`.
+
+The function `getFeaturesPairList()` returns a named list, C1-C6, where feature pairs
+are defined.  Pairs are (1,2), (3,4), (5,6), etc. for each cluster label.
 
 The main function `callSubtypes()` handles gene matching, data transformation, and prediction.
 
