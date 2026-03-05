@@ -84,6 +84,7 @@ editPairList <- function(pair_list, items_to_remove) {
 #' @export
 getFeaturesPairList <- function() {
   data(gene_list, envir = environment())
+  return(pair_list)
 }
 
 

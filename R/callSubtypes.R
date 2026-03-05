@@ -74,145 +74,108 @@ modelGenes <- function(model=NULL, model_path=NULL, geneid='symbol') {
 }
 
 
-
-#' Print Gene Match Error Report
-#'
-#' Display a formatted report of the gene matching error rate.
-#'
-#' @param err Numeric, the match error proportion (0-1).
-#'
-#' @return NULL (called for side effect of printing).
-#'
-#' @keywords internal
-reportError <- function(err) {
-  message("**************************************")
-  message("    Gene Match Error Report           ")
-  message("                                      ")
-  message(sprintf("  percent missing genes: %.1f%%", err * 100))
-  message("                                      ")
-  message("see ?geneMatchErrorReport for details ")
-  message("                                      ")
-  message("**************************************")
-}
-
-
 #' Match Gene IDs to Model Features
 #'
-#' Match the incoming data gene identifiers to the features used in training.
-#' Supports multiple gene ID formats.
+#' Match incoming data gene identifiers to features used in training.
 #'
-#' @param X Gene expression matrix with genes in rows and samples in columns.
-#' @param geneid Character string specifying the gene ID type in the row names.
-#'   One of "symbol" (HGNC symbols), "entrez" (Entrez IDs), "ensembl"
-#'   (Ensembl IDs with optional version suffix), or "pairs" (already matched,
-#'   returns input unchanged). Default is "pairs".
-#' @param sampleid Character string specifying the sample ID column name.
-#'   Default is "SampleBarcode".
+#' @param X data.frame with samples in rows, genes in columns.
+#' @param model A trained robencla model object.
+#' @param model_path Path to a saved robencla model .rds file.
+#' @param geneid One of "symbol", "entrez", "ensembl", or "pairs".
+#' @param sampleid Column name for sample IDs. Default "SampleBarcode".
+#' @param labelid Column name for labels. Default NULL.
+#' @param error_limit Proportion of missing genes tolerated (0.0-1.0). Default 0.0.
 #'
-#' @return A list containing:
-#'   \item{Subset}{Matrix with rows reordered/subset to match model features.
-#'     Missing genes appear as NA rows.}
-#'   \item{matchError}{Numeric, proportion of model genes not found in input
-#'     (0 = perfect match, 1 = no genes matched).}
-#'   \item{missingGenes}{Genes needed by the model, but not found in the gene_map or expression matrix.}
-#'
-#' @details
-#' The function loads the \code{ebpp_genes_sig} reference data containing
-#' the gene identifiers used during model training. Input genes are matched
-#' to this reference, and the output matrix is reordered accordingly.
-#' Genes present in the reference but missing from the input will have
-#' NA values in the output.
-#'
-#' @examples
-#' \dontrun{
-#' # Match by gene symbol
-#' result <- geneMatch(expr_matrix, geneid = "symbol")
-#' matched_data <- result$Subset
-#' pct_missing <- result$matchError
-#' }
+#' @return List with Subset (matched data.frame), matchError (proportion missing),
+#'   and missingGenes (character vector of unmatched genes).
 #'
 #' @export
 geneMatch <- function(X,
-                      model,
-                      model_path,
+                      model = NULL,
+                      model_path = NULL,
                       geneid = "symbol",
                       sampleid = "SampleBarcode",
-                      labelid = "Label",
+                      labelid = NULL,
                       error_limit = 0.0) {
 
-  # for convenience
   X <- as.data.frame(X)
 
-  # get the required genes from the model
-  if (!is.null(model)) {
-    modelgenes <- model$pair_list
-  } else if (!is.null(model_path)) {
-    model <- readRDS(model_path)
-  } else {
-    print("Error: geneMatch ... Please include a model!")
-    return(NULL)
+  # Load model if needed
+  if (is.null(model)) {
+    if (!is.null(model_path)) {
+      model <- readRDS(model_path)
+    } else {
+      stop("geneMatch: please provide either model or model_path")
+    }
   }
 
-  # get the model genes out
+  # pairs mode - no matching needed
+  if (geneid == "pairs") {
+    return(list(Subset = X, matchError = 0, missingGenes = character(0)))
+  }
+
+  # Get unique model genes
   modelgenes <- unique(as.vector(unlist(model$pair_list)))
 
-  # get the EBpp gene table
-  data(ebpp_gene, envir = environment())
+  # Load reference gene table
+  data("ebpp_gene", package = "ImmuneSubtypeClassifier", envir = environment())
 
-  # get the gene map for these genes
-  if(geneid == 'symbol') {
-    gene_map <- ebpp_genes_full[ebpp_genes_full$Symbol %in% modelgenes, ]
-  } else if (geneid == 'entrez') {
-    gene_map <- ebpp_genes_full[ebpp_genes_full$Entrez %in% modelgenes, ]
-  } else if (geneid == 'ensembl') {
-    gene_map <- ebpp_genes_full[ebpp_genes_full$Ensembl %in% modelgenes, ]
+  # Build gene map based on ID type
+  gene_map <- switch(geneid,
+                     symbol  = ebpp_genes_full[ebpp_genes_full$Symbol %in% modelgenes, ],
+                     entrez  = ebpp_genes_full[ebpp_genes_full$Entrez  %in% modelgenes, ],
+                     ensembl = ebpp_genes_full[ebpp_genes_full$Ensembl %in% modelgenes, ],
+                     stop("geneid must be one of: symbol, entrez, ensembl, pairs")
+  )
+
+  # Match gene map to input columns
+  if (geneid == "ensembl") {
+    # Strip version suffixes from input (e.g. ENSG00000001.12 -> ENSG00000001)
+    input_genes <- vapply(
+      strsplit(colnames(X), "\\."),
+      function(a) a[1],
+      character(1)
+    )
   } else {
-    stop("For geneid, please use: symbol, entrez, ensembl, or pairs")
+    input_genes <- colnames(X)
   }
 
-  if (geneid == "symbol") {
-    idx <- match(x = gene_map$Symbol, table = colnames(X))
-  } else if (geneid == "entrez") {
-    idx <- match(x = gene_map$Entrez, table = colnames(X))
-  } else if (geneid == "ensembl") {
-    input_ens <- stringr::str_split(colnames(X), pattern = "\\.")
-    input_ens <- vapply(input_ens, function(a) a[1], character(1))
-    idx <- match(x = gene_map$Ensembl, table = input_ens)
-  } else if (geneid == "pairs") {
-    return(list(Subset = X, matchError = 0))
-  } else {
-    stop("For geneid, please use: symbol, entrez, ensembl, or pairs")
-  }
+  id_col <- switch(geneid,
+                   symbol  = gene_map$Symbol,
+                   entrez  = gene_map$Entrez,
+                   ensembl = gene_map$Ensembl
+  )
 
-  # report the match error
-  matchError <- sum(is.na(idx)) / (length(modelgenes))
-  missingGenes <- c()
+  idx <- match(id_col, input_genes)
+
+  # Report and handle missing genes
+  matchError <- sum(is.na(idx)) / length(modelgenes)
+  missingGenes <- modelgenes[!(modelgenes %in% id_col[!is.na(idx)])]
+
   if (matchError > error_limit) {
-    # Genes required by model but not found in input data
-    missingGenes <- modelgenes[is.na(idx)]
-    reportError(matchError)
-    cat("Missing genes:\n")
-    print(missingGenes)
+    message("**************************************")
+    message("    Gene Match Error Report           ")
+    message(sprintf("  percent missing genes: %.1f%%", matchError * 100))
+    message("  Missing genes:")
+    message(paste(" ", missingGenes, collapse = "\n"))
+    message("**************************************")
     return(list(Subset = NULL, matchError = matchError, missingGenes = missingGenes))
   }
 
-  # Subset COLUMNS, but keep sample ID column
-  gene_cols <- idx[!is.na(idx)]
-  # Instead of X2 <- X[, gene_cols, drop = FALSE]
-  X2 <- X[, gene_cols, drop = FALSE]
-
+  # Subset to matched gene columns
+  matched_idx <- idx[!is.na(idx)]
+  X2 <- X[, matched_idx, drop = FALSE]
   colnames(X2) <- gene_map$Symbol[!is.na(idx)]
 
-  # Preserve sample ID column
-  if (sampleid %in% colnames(X)) {
+  # Preserve sampleid column if present
+  if (!is.null(sampleid) && sampleid %in% colnames(X)) {
     X2[[sampleid]] <- X[[sampleid]]
   }
 
-  # Preserve Label column
-  if (labelid %in% colnames(X)) {
+  # Preserve labelid column if present
+  if (!is.null(labelid) && labelid %in% colnames(X)) {
     X2[[labelid]] <- X[[labelid]]
   }
-
 
   return(list(Subset = X2, matchError = matchError, missingGenes = missingGenes))
 }
