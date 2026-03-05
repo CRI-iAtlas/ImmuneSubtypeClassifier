@@ -95,7 +95,7 @@ geneMatch <- function(X,
                       model_path = NULL,
                       geneid = "symbol",
                       sampleid = "SampleBarcode",
-                      labelid = NULL,
+                      labelid = "Label",
                       error_limit = 0.0) {
 
   X <- as.data.frame(X)
