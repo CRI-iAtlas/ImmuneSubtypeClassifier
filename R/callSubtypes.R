@@ -287,10 +287,25 @@ callSubtypes <- function(X_or_path=NULL,
 
   results <- model$results()
 
+  # Defensive check on results structure
+  if (is.null(results) || nrow(results) == 0) {
+    stop("callSubtypes: model$results() returned empty or NULL — prediction may have failed")
+  }
+
+  # Find the sample ID column flexibly
+  possible_id_cols <- c("SampleID", "SampleIDs", "Barcode", "SampleBarcode", sampleid)
+  id_col <- intersect(possible_id_cols, colnames(results))[1]
+  if (is.na(id_col)) {
+    stop(sprintf(
+      "callSubtypes: could not find sample ID column in results. Available columns: %s",
+      paste(colnames(results), collapse=", ")
+    ))
+  }
+
   output <- data.frame(
-    SampleIDs = results$SampleID,
-    BestCall = as.integer(gsub("C", "", results$BestCall)),
-    Label = if(!is.null(labelid)){as.integer(gsub("C", "", results$Label))} else { NA },
+    SampleIDs = results[[id_col]],
+    BestCall  = as.integer(gsub("C", "", results$BestCall)),
+    Label     = if (!is.null(labelid)) as.integer(gsub("C", "", results$Label)) else NA,
     stringsAsFactors = FALSE
   )
 
