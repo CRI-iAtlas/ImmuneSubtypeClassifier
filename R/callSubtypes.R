@@ -277,6 +277,13 @@ callSubtypes <- function(X_or_path=NULL,
 
   X <- res0$Subset
 
+  if (is.null(X)) {
+  stop(sprintf(
+    "callSubtypes: gene matching failed (%.1f%% missing). See above for details.",
+    res0$matchError * 100
+  ))
+}
+
   print("Starting prediction...")
   model$predict(
     data_frame = X,
