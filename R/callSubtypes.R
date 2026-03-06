@@ -162,10 +162,18 @@ geneMatch <- function(X,
     return(list(Subset = NULL, matchError = matchError, missingGenes = missingGenes))
   }
 
+
   # Subset to matched gene columns
   matched_idx <- idx[!is.na(idx)]
   X2 <- X[, matched_idx, drop = FALSE]
   colnames(X2) <- gene_map$Symbol[!is.na(idx)]
+
+  # Fill missing genes with NA
+  if (length(missingGenes) > 0) {
+    for (g in missingGenes) {
+      X2[[g]] <- NA_real_
+    }
+  }
 
   # Preserve sampleid column if present
   if (!is.null(sampleid) && sampleid %in% colnames(X)) {
