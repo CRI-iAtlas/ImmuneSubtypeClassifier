@@ -237,7 +237,8 @@ callSubtypes <- function(X_or_path=NULL,
                          model_path = NULL,
                          geneid = "symbol",
                          sampleid = 'Barcode',
-                         labelid=NULL) {
+                         labelid=NULL,
+                         error_limit = 0.0)) {
   if (is.null(model)) {
     if (!is.null(model_path)) {
       model <- readRDS(model_path)
@@ -273,7 +274,8 @@ callSubtypes <- function(X_or_path=NULL,
 
   # check that all needed genes are available
   res0 <- geneMatch(X, model, model_path,
-                    geneid=geneid, sampleid=sampleid, labelid=labelid)
+                   geneid=geneid, sampleid=sampleid, labelid=labelid,
+                   error_limit=error_limit)
 
   X <- res0$Subset
 
