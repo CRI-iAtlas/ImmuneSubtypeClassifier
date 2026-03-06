@@ -152,16 +152,24 @@ geneMatch <- function(X,
   matchError <- sum(is.na(idx)) / length(modelgenes)
   missingGenes <- modelgenes[!(modelgenes %in% id_col[!is.na(idx)])]
 
-  if (matchError > error_limit) {
+  if (matchError > 0.0) {
     message("**************************************")
     message("    Gene Match Error Report           ")
     message(sprintf("  percent missing genes: %.1f%%", matchError * 100))
     message("  Missing genes:")
     message(paste(" ", missingGenes, collapse = "\n"))
+    message("  Filling missing genes with NA.")
     message("**************************************")
-    return(list(Subset = NULL, matchError = matchError, missingGenes = missingGenes))
   }
 
+  # Hard stop for catastrophic missingness
+  if (matchError > error_limit) {
+    stop(sprintf(
+      "geneMatch: %.1f%% of model genes missing — too many to impute. Check geneid type and data orientation.\nMissing genes: %s",
+      matchError * 100,
+      paste(missingGenes, collapse=", ")
+    ))
+  }
 
   # Subset to matched gene columns
   matched_idx <- idx[!is.na(idx)]
@@ -174,7 +182,6 @@ geneMatch <- function(X,
       X2[[g]] <- NA_real_
     }
   }
-
   # Preserve sampleid column if present
   if (!is.null(sampleid) && sampleid %in% colnames(X)) {
     X2[[sampleid]] <- X[[sampleid]]
@@ -246,7 +253,7 @@ callSubtypes <- function(X_or_path=NULL,
                          geneid = "symbol",
                          sampleid = 'Barcode',
                          labelid=NULL,
-                         error_limit = 0.0) {
+                         error_limit = 0.2) {
   if (is.null(model)) {
     if (!is.null(model_path)) {
       model <- readRDS(model_path)
