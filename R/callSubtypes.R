@@ -238,7 +238,7 @@ callSubtypes <- function(X_or_path=NULL,
                          geneid = "symbol",
                          sampleid = 'Barcode',
                          labelid=NULL,
-                         error_limit = 0.0)) {
+                         error_limit = 0.0) {
   if (is.null(model)) {
     if (!is.null(model_path)) {
       model <- readRDS(model_path)
